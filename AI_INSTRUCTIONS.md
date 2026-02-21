@@ -39,6 +39,10 @@ La aplicación sigue un patrón modular basado en namespaces globales (objetos d
 - **Seguridad:** Los tokens de Roam Graph otorgan poder de escritura. El uso de `localStorage` requiere advertencias.
 - **Limitaciones de API de Roam:** No soporta grafos encriptados (E2E).
 - **Búsqueda exacta:** Se requiere coincidencia exacta del título de la página.
+- **Quirks de la API (REST Externa):** 
+  - La API externa requiere el uso del encabezado `X-Authorization: Bearer <token>` (en lugar de `Authorization`).
+  - Para leer usar `/q` para Datalog o `/pull` para entidades (nunca `/read`). 
+  - Para escribir en el endpoint `/write`, se recomienda envolver las acciones en un payload con `action: 'batch-actions'` y proveer el arreglo en la propiedad `actions`.
 
 ## 7. Fragilidades y Errores Comunes
 - **Acoplamiento de selectores DOM:** `app.js` depende de IDs de HTML. Si cambias `index.html`, audita las referencias en `app.js`.

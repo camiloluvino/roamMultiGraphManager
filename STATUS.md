@@ -1,7 +1,8 @@
 # STATUS
+**Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.0** (Fase de prototipo / Incompleto)
+**v0.1.1** (Fase de prototipo / Core funcionando)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Implementada. Tabs, layouts y modales están construidos visualmente.
@@ -11,8 +12,10 @@
 - 🟢 **Integración Roam API:** Implementada síncrona/fetch wrapper (`api.js`).
 
 ## 3. Historial Reciente
+- **CORRECCIÓN CRÍTICA DE API:** Se diagnosticó y corrigió el error de conexión de red 401/404 al integrar la API de Roam Research. Se reemplazó el endpoint inválido `/read` por `/q` y `/pull`, se formateó la escritura con `batch-actions` para el endpoint `/write`, y se corrigió el encabezado de autenticación a `X-Authorization` según los requerimientos restritos de la API externa de Roam.
 - **CORRECCIÓN CRÍTICA:** Se crearon los archivos faltantes `js/api.js` y `js/storage.js` restaurando la operatividad básica de la app.
 - **MEJORA DE UX/SEGURIDAD:** Se corrigió en `app.js` y `ui.js` un renderizado de DOM destructivo que causaba mala usabilidad, y se añadió interpolación segura de texto para prevenir XSS.
+- **DESPLIEGUE:** Repositorio Git inicializado y primer push a GitHub realizado con éxito.
 
 ## 4. Problemas Conocidos (Bugs / TODOs)
 - **Limitación en UI:** Si falla un event listener por un ID que no se encuentra en el HTML en `app.js`, la consola arrojará error pero la interfaz no dará feedback visible.

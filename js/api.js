@@ -30,7 +30,7 @@ const RoamAPI = {
             const response = await fetch(`${graph.baseUrl}/${endpoint}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${graph.token}`,
+                    'X-Authorization': `Bearer ${graph.token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
@@ -68,10 +68,9 @@ const RoamAPI = {
         try {
             // Un query pull simple para probar el token (ej. buscar el título de la página Home)
             const payload = {
-                action: 'q',
                 query: `[:find ?uid . :where [?e :node/title "roam/js"] [?e :block/uid ?uid]]`
             };
-            await this._request(graph, 'read', payload);
+            await this._request(graph, 'q', payload);
             return true;
         } catch (error) {
             console.error('Connection test failed:', error);
@@ -86,7 +85,7 @@ const RoamAPI = {
      * @returns {Promise<any>} Query results
      */
     async q(graph, query) {
-        return this._request(graph, 'read', { action: 'q', query });
+        return this._request(graph, 'q', { query });
     },
 
     /**
@@ -97,7 +96,7 @@ const RoamAPI = {
      * @returns {Promise<Object>} Entity tree
      */
     async pull(graph, selector, eid) {
-        return this._request(graph, 'read', { action: 'pull', selector, eid });
+        return this._request(graph, 'pull', { selector, eid });
     },
 
     /**
@@ -175,7 +174,10 @@ const RoamAPI = {
             });
         });
 
-        return this._request(graph, 'write', { txData });
+        return this._request(graph, 'write', {
+            action: 'batch-actions',
+            actions: txData
+        });
     },
 
     /**
@@ -186,14 +188,13 @@ const RoamAPI = {
      * @returns {Promise<any>} Response
      */
     async updatePage(graph, uid, newTitle) {
-        const txData = [{
+        return this._request(graph, 'write', {
             action: 'update-page',
             page: {
                 uid: uid,
                 title: newTitle
             }
-        }];
-        return this._request(graph, 'write', { txData });
+        });
     },
 
     /**
@@ -203,13 +204,72 @@ const RoamAPI = {
      * @returns {Promise<any>} Response
      */
     async deletePage(graph, uid) {
-        const txData = [{
+        return this._request(graph, 'write', {
             action: 'delete-page',
             page: {
                 uid: uid
             }
-        }];
-        return this._request(graph, 'write', { txData });
+        });
+    },
+
+    /**
+     * Get recently created pages
+     * @param {Object} graph - Graph config
+     * @param {number} limit - Max results
+     * @returns {Promise<Array>} List of pages with creation time
+     */
+    async getRecentPages(graph, limit = 10) {
+        // Find pages, their title, uid, and creation time
+        const query = `[:find ?title ?uid ?time
+                       :where 
+                       [?p :node/title ?title]
+                       [?p :block/uid ?uid]
+                       [?p :create/time ?time]]`;
+        const result = await this.q(graph, query);
+
+        if (!result || !Array.isArray(result)) return [];
+
+        // Map, sort descending by time, and slice
+        return result
+            .map(([title, uid, time]) => ({ type: 'create', title, uid, time, graph: graph.name }))
+            .sort((a, b) => b.time - a.time)
+            .slice(0, limit);
+    },
+
+    /**
+     * Get recently edited blocks with their page titles
+     * @param {Object} graph - Graph config
+     * @param {number} limit - Max results
+     * @returns {Promise<Array>} List of edits with page context
+     */
+    async getRecentEdits(graph, limit = 15) {
+        // Advanced query: find blocks, their edit time, string, and the title of their ancestor page
+        const query = `[:find ?pageTitle ?pageUid ?blockUid ?time ?string
+                       :where 
+                       [?b :edit/time ?time]
+                       [?b :block/uid ?blockUid]
+                       [?b :block/string ?string]
+                       [?b :block/page ?p]
+                       [?p :node/title ?pageTitle]
+                       [?p :block/uid ?pageUid]]`;
+
+        const result = await this.q(graph, query);
+
+        if (!result || !Array.isArray(result)) return [];
+
+        // Map, sort descending by time, and slice
+        return result
+            .map(([pageTitle, pageUid, blockUid, time, string]) => ({
+                type: 'edit',
+                pageTitle,
+                pageUid,
+                blockUid,
+                time,
+                content: string,
+                graph: graph.name
+            }))
+            .sort((a, b) => b.time - a.time)
+            .slice(0, limit);
     }
 };
 
