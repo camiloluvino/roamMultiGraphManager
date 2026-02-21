@@ -218,15 +218,28 @@ const RoamAPI = {
      * Get recently created pages
      * @param {Object} graph - Graph config
      * @param {number} limit - Max results
+     * @param {number} since - Unix timestamp min
+     * @param {number} until - Unix timestamp max
      * @returns {Promise<Array>} List of pages with creation time
      */
-    async getRecentPages(graph, limit = 10) {
+    async getRecentPages(graph, limit = 10, since = 0, until = Infinity) {
+        let constraints = '';
+        if (since > 0) constraints += `[(>= ?time ${since})] `;
+        if (until !== Infinity) constraints += `[(< ?time ${until})] `;
+
+        // For performance, cap unbounded queries to last 30 days
+        if (since === 0 && until === Infinity) {
+            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            constraints += `[(>= ?time ${thirtyDaysAgo})] `;
+        }
+
         // Find pages, their title, uid, and creation time
         const query = `[:find ?title ?uid ?time
                        :where 
                        [?p :node/title ?title]
                        [?p :block/uid ?uid]
-                       [?p :create/time ?time]]`;
+                       [?p :create/time ?time]
+                       ${constraints}]`;
         const result = await this.q(graph, query);
 
         if (!result || !Array.isArray(result)) return [];
@@ -242,13 +255,26 @@ const RoamAPI = {
      * Get recently edited blocks with their page titles
      * @param {Object} graph - Graph config
      * @param {number} limit - Max results
+     * @param {number} since - Unix timestamp min
+     * @param {number} until - Unix timestamp max
      * @returns {Promise<Array>} List of edits with page context
      */
-    async getRecentEdits(graph, limit = 15) {
+    async getRecentEdits(graph, limit = 15, since = 0, until = Infinity) {
+        let constraints = '';
+        if (since > 0) constraints += `[(>= ?time ${since})] `;
+        if (until !== Infinity) constraints += `[(< ?time ${until})] `;
+
+        // For performance, cap unbounded queries to last 30 days
+        if (since === 0 && until === Infinity) {
+            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            constraints += `[(>= ?time ${thirtyDaysAgo})] `;
+        }
+
         // Advanced query: find blocks, their edit time, string, and the title of their ancestor page
         const query = `[:find ?pageTitle ?pageUid ?blockUid ?time ?string
                        :where 
                        [?b :edit/time ?time]
+                       ${constraints}
                        [?b :block/uid ?blockUid]
                        [?b :block/string ?string]
                        [?b :block/page ?p]

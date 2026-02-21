@@ -7,6 +7,7 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 - **Dashboard Tabular:** Vista compacta y organizada de la actividad reciente en 5 columnas.
 - **Filtros Avanzados:** Filtra por tiempo (Hoy/Ayer/Semana), tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque).
 - **Gestión Segura de Grafos:** Nueva pestaña de configuración con diseño de dos columnas para gestionar tokens y activar grafos.
+- **Persistencia de Selección:** Recuerda tus grafos activos automáticamente entre sesiones.
 - **Sidebar Dinámico:** Muestra únicamente los grafos activados para reducir ruido visual durante las operaciones.
 - **Crear páginas** en múltiples grafos con un solo clic.
 - **Modificar títulos** de páginas existentes.

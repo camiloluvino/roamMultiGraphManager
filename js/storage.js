@@ -6,7 +6,8 @@
 const Storage = {
     KEYS: {
         GRAPHS: 'roam_mg_graphs',
-        LOGS: 'roam_mg_logs'
+        LOGS: 'roam_mg_logs',
+        SELECTED_GRAPHS: 'roam_mg_selected'
     },
 
     MAX_LOGS: 100,
@@ -92,6 +93,32 @@ const Storage = {
             localStorage.setItem(this.KEYS.GRAPHS, JSON.stringify(graphs));
         } catch (e) {
             console.error('Error saving graphs to storage', e);
+        }
+    },
+
+    /**
+     * Get selected graphs
+     * @returns {string[]} Array of selected graph names
+     */
+    getSelectedGraphs() {
+        try {
+            const data = localStorage.getItem(this.KEYS.SELECTED_GRAPHS);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Error reading selected graphs from storage', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save selected graphs
+     * @param {string[]} selectedGraphs - Array of selected graph names
+     */
+    saveSelectedGraphs(selectedGraphs) {
+        try {
+            localStorage.setItem(this.KEYS.SELECTED_GRAPHS, JSON.stringify(selectedGraphs));
+        } catch (e) {
+            console.error('Error saving selected graphs to storage', e);
         }
     },
 

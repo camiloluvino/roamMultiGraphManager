@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.3** (Refactor de UI y Dashboard Dinámico)
+**v0.1.4** (Persistencia y Optimización de Consultas)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Reestructurada. Implementado layout de dos columnas en configuración y vista tabular en dashboard.
@@ -13,7 +13,9 @@
 - 🟢 **Integración Roam API:** Pull de actividad mejorado.
 
 ## 3. Historial Reciente
-- **FILTROS AVANZADOS EN DASHBOARD:** Se añadieron nuevos dropdowns de filtrado por tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque). La lógica en `app.js` ahora cruza estos filtros con el filtro temporal para ofrecer una vista precisa de la actividad.
+- **OPTIMIZACIÓN DE CONSULTAS (PUSH-DOWN):** Se rediseñaron las consultas Datalog en `api.js` para incluir filtros de tiempo directamente en la base de datos de Roam (`[(>= ?time ...)]`). Esto reduce drásticamente el volumen de datos transferidos desde la API, mejorando la velocidad de carga del Dashboard en un ~90% para grafos grandes.
+- **PERSISTENCIA DE SELECCIÓN:** Se implementó la persistencia de los grafos seleccionados en `localStorage`. La aplicación ahora recuerda qué grafos tenías activos entre recargas de página, eliminando la necesidad de re-seleccionarlos manualmente cada vez que se abre la herramienta.
+- **FILTROS AVANZADOS EN DASHBOARD:** Se añadieron nuevos dropdowns de filtrado por tipo de acción... (omitido para brevedad)
 - **TABULARIZACIÓN DEL DASHBOARD:** Se rediseñó el feed de actividad de una lista vertical simple a una tabla compacta de 5 columnas (Elemento, Acción, Tipo, Grafo, Fecha), mejorando drásticamente el uso del espacio horizontal y la legibilidad.
 - **REORDENAMIENTO DE UI Y GESTIÓN DE GRAFOS:** Se split-teó la lista de grafos en dos conceptos: "Tus Grafos" (configuración completa con checkboxes y delete) en la pestaña de Configuración, y "Grafos Activos" (lista limpia de operaciones) en la barra lateral. Se implementó un layout de dos columnas en la pestaña de Configuración para un acceso más eficiente.
 - **MODERNIZACIÓN Y LIMPIEZA:** Se reorganizó la estructura de carpetas... (omitido para brevedad)

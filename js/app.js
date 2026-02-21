@@ -9,9 +9,31 @@ const App = {
     init() {
         this.seedDefaultGraphs();
         this.bindEvents();
+        this.loadSelectedGraphsState();
         this.loadGraphs();
         this.renderLogs();
         this.setActiveTab('create');
+    },
+
+    /**
+     * Load selected graphs state from storage
+     */
+    loadSelectedGraphsState() {
+        const saved = Storage.getSelectedGraphs();
+        this.selectedGraphs = new Set(saved);
+
+        // Verificamos que los grafos seleccionados sigan existiendo
+        const allGraphs = Storage.getGraphs();
+        let changed = false;
+        for (const name of this.selectedGraphs) {
+            if (!allGraphs[name]) {
+                this.selectedGraphs.delete(name);
+                changed = true;
+            }
+        }
+        if (changed) {
+            Storage.saveSelectedGraphs(Array.from(this.selectedGraphs));
+        }
     },
 
     /**
@@ -269,8 +291,8 @@ const App = {
 
                 // Fire both queries
                 const [pages, edits] = await Promise.all([
-                    RoamAPI.getRecentPages(graph, limit),
-                    RoamAPI.getRecentEdits(graph, limit)
+                    RoamAPI.getRecentPages(graph, limit, since, until),
+                    RoamAPI.getRecentEdits(graph, limit, since, until)
                 ]);
                 return [...pages, ...edits];
             } catch (error) {
@@ -404,6 +426,7 @@ const App = {
         if (confirmed) {
             Storage.removeGraph(name);
             this.selectedGraphs.delete(name);
+            Storage.saveSelectedGraphs(Array.from(this.selectedGraphs));
             this.loadGraphs();
             Storage.addLog('info', `Grafo "${name}" eliminado de la configuración`);
             this.renderLogs();
@@ -422,6 +445,7 @@ const App = {
         } else {
             this.selectedGraphs.delete(name);
         }
+        Storage.saveSelectedGraphs(Array.from(this.selectedGraphs));
 
         // Update active graphs view in sidebar
         const graphs = Storage.getGraphs();
@@ -451,6 +475,7 @@ const App = {
             this.selectedGraphs.clear();
         }
 
+        Storage.saveSelectedGraphs(Array.from(this.selectedGraphs));
         this.loadGraphs();
         this.updatePreview();
     },
