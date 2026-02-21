@@ -3,7 +3,7 @@
  * Handles UI components and interactions
  */
 
-const UI = {
+export const UI = {
     /**
      * Show a toast notification
      * @param {string} message - Notification message
@@ -326,5 +326,4 @@ const UI = {
     }
 };
 
-// Export for use in other modules
-window.UI = UI;
+// Exported for use as module

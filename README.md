@@ -79,10 +79,11 @@ Para cada grafo que quieras gestionar:
 ```
 roamMultiGraphManager/
 ├── index.html      # Interfaz principal
+├── docs/           # Documentación y referencias externas
 ├── css/
 │   └── styles.css  # Estilos dark theme
 ├── js/
-│   ├── app.js      # Lógica principal
+│   ├── app.js      # Punto de entrada (ES Module)
 │   ├── api.js      # Wrapper Roam API
 │   ├── storage.js  # Gestión de tokens/logs
 │   └── ui.js       # Componentes de UI

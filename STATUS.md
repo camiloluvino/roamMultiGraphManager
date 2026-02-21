@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.1** (Fase de prototipo / Core funcionando)
+**v0.1.2** (Refactor a ES Modules)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Implementada. Tabs, layouts y modales están construidos visualmente.
@@ -12,6 +12,7 @@
 - 🟢 **Integración Roam API:** Implementada síncrona/fetch wrapper (`api.js`).
 
 ## 3. Historial Reciente
+- **MODERNIZACIÓN Y LIMPIEZA:** Se reorganizó la estructura de carpetas moviendo archivos de documentación grandes a `docs/`. Se realizó la transición completa a **ES Modules** (`type="module"`), eliminando la carga global de scripts en el HTML y utilizando `import/export` para gestionar dependencias entre `app.js`, `api.js`, `storage.js` y `ui.js`.
 - **MEJORA DE DASHBOARD:** Se añadió un filtro por fecha ("Hoy", "Ayer", "Esta semana", "Todo") en la pestaña Dashboard. Modificando `index.html` y actualizando la lógica en `app.js` para filtrar localmente y obtener dinámicamente mayor cantidad de registros base cuando hay un filtro temporal activo.
 - **CORRECCIÓN DE DASHBOARD:** Se solucionó el problema donde el panel de Actividad Reciente del Dashboard aparecía vacío ("No se encontró actividad reciente"). Se diagnosticó que la API REST de Roam devuelve las respuestas de consultas de Datomic (endpoint `/q`) envueltas en un objeto `{ result: [...] }`, lo cual rompía el chequeo `Array.isArray()` en el renderizado del feed. Se modificó el parser de peticiones de red en `api.js` para desenvolver automáticamente la propiedad `result` cuando está presente.
 - **CORRECCIÓN CRÍTICA DE API:** Se diagnosticó y corrigió el error de conexión de red 401/404 al integrar la API de Roam Research. Se reemplazó el endpoint inválido `/read` por `/q` y `/pull`, se formateó la escritura con `batch-actions` para el endpoint `/write`, y se corrigió el encabezado de autenticación a `X-Authorization` según los requerimientos restritos de la API externa de Roam.

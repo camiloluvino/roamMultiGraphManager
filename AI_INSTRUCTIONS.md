@@ -4,14 +4,15 @@
 Aplicación web vanilla para gestionar páginas en múltiples grafos de Roam Research de forma simultánea. Permite crear, modificar y eliminar páginas usando la API de Roam, manteniendo la configuración del usuario localmente en su navegador.
 
 ## 2. Fuente de Verdad y Flujo de Trabajo
-- **Archivos fuente directos:** No hay bundlers, transpiladores (Webpack, Vite, Babel) ni proceso de build. Los archivos `.js`, `.html` y `.css` en la raíz son la versión ejecutada directamente por el navegador.
-- **Edición:** Todos los archivos en el directorio del proyecto son editables y constituyen la única fuente de verdad.
-- **Flujo de desarrollo:** Cualquier cambio en HTML, CSS o JS se refleja directamente al recargar la página en el navegador.
+- **Archivos fuente directos:** Los archivos `.js`, `.html` y `.css` son la versión ejecutada. Se utiliza el sistema nativo de **ES Modules** del navegador.
+- **Edición:** Todos los archivos en el directorio del proyecto son editables.
+- **Flujo de desarrollo:** Los cambios se reflejan al recargar. Al usar módulos, el punto de entrada es `js/app.js`.
+- **Organización:** Los recursos externos y documentación de referencia se encuentran en `docs/`.
 
 ## 3. Arquitectura Conceptual
-La aplicación sigue un patrón modular basado en namespaces globales (objetos de Javascript):
-- `index.html`: Define la estructura y carga los scripts en un orden específico.
-- `app.js` (`App`): El controlador principal. Coordina la inicialización, vincula eventos (event listeners) y ejecuta la lógica de mayor nivel de negocio.
+La aplicación sigue un patrón modular basado en **ES Modules**:
+- `index.html`: Carga únicamente `js/app.js` como un módulo (`type="module"`).
+- `js/app.js` (`App`): El controlador principal. Importa `Storage`, `RoamAPI` y `UI`.
 - `ui.js` (`UI`): Capa de presentación abstracta. Contiene funciones puras de manipulación del DOM, modales, toasts y renderizado condicional.
 - `api.js` (`RoamAPI`): Wrapper para la comunicación HTTP/WebSocket con la API de Roam Research.
 - `storage.js` (`Storage`): Abstracción sobre `localStorage` para la persistencia de tokens de API y el registro (logs) de operaciones de manera segura.

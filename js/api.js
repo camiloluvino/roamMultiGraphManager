@@ -3,7 +3,7 @@
  * Wrapper for Roam Research API operations
  */
 
-const RoamAPI = {
+export const RoamAPI = {
     /**
      * Initialize graph configuration object
      * @param {string} name - Graph name
@@ -275,5 +275,4 @@ const RoamAPI = {
     }
 };
 
-// Export for use in other modules
-window.RoamAPI = RoamAPI;
+// Exported for use as module

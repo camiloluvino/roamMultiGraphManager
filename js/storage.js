@@ -3,12 +3,12 @@
  * Handles local persistence of configuration and logs
  */
 
-const Storage = {
+export const Storage = {
     KEYS: {
         GRAPHS: 'roam_mg_graphs',
         LOGS: 'roam_mg_logs'
     },
-    
+
     MAX_LOGS: 100,
 
     /**
@@ -116,7 +116,7 @@ const Storage = {
      */
     addLog(type, message) {
         const logs = this.getLogs();
-        
+
         const newLog = {
             id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
             timestamp: new Date().toISOString(),
@@ -125,7 +125,7 @@ const Storage = {
         };
 
         logs.unshift(newLog); // Add to beginning
-        
+
         // Trim to max length
         if (logs.length > this.MAX_LOGS) {
             logs.length = this.MAX_LOGS;
@@ -146,5 +146,4 @@ const Storage = {
     }
 };
 
-// Export for use in other modules
-window.Storage = Storage;
+// Exported for use as module

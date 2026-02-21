@@ -1,9 +1,8 @@
-/**
- * Roam Multi-Graph Manager - Main Application
- * Coordinates all modules and handles main logic
- */
+import { Storage } from './storage.js';
+import { RoamAPI } from './api.js';
+import { UI } from './ui.js';
 
-const App = {
+export const App = {
     selectedGraphs: new Set(),
     currentOperation: 'create',
     currentView: 'dashboard', // default top-level view
@@ -594,5 +593,4 @@ const App = {
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => App.init());
 
-// Export for use
-window.App = App;
+// Exported for use as module
