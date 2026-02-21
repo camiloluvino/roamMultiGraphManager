@@ -280,6 +280,49 @@ const UI = {
     `;
 
         this.showModal('results-modal');
+    },
+
+    /**
+     * Render dashboard activity feed
+     * @param {HTMLElement} container - Dashboard content container
+     * @param {Array} activities - Sorted array of activity items
+     */
+    renderDashboardActivity(container, activities) {
+        if (!activities || activities.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📭</div>
+                    <p>No se encontró actividad reciente en los grafos seleccionados.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = activities.map(item => {
+            const isCreate = item.type === 'create';
+            const icon = isCreate ? '🟢' : '✏️';
+            const actionText = isCreate ? 'Creada' : 'Modificada';
+            const title = isCreate ? item.title : item.pageTitle;
+            const timeStr = new Date(item.time).toLocaleString('es', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            return `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="activity-meta">
+                            <span title="${actionText}">${icon}</span>
+                            <span>${timeStr}</span>
+                        </span>
+                        <span class="activity-graph">${this.escapeHTML(item.graph)}</span>
+                    </div>
+                    <div class="activity-title">
+                        ${this.escapeHTML(title || 'Sin Título')}
+                    </div>
+                    ${!isCreate && item.content ? `<div class="hint" style="margin-top: 4px; border-left: 2px solid var(--border-color); padding-left: 8px;">${this.escapeHTML(item.content.substring(0, 100))}${item.content.length > 100 ? '...' : ''}</div>` : ''}
+                </div>
+            `;
+        }).join('');
     }
 };
 

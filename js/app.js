@@ -6,6 +6,7 @@
 const App = {
     selectedGraphs: new Set(),
     currentOperation: 'create',
+    currentView: 'dashboard', // default top-level view
 
     /**
      * Initialize the application
@@ -21,6 +22,25 @@ const App = {
      * Bind UI event listeners
      */
     bindEvents() {
+        // Top-level View switching
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.setActiveView(btn.dataset.view));
+        });
+
+        // Dashboard refresh
+        document.getElementById('btn-refresh-dashboard')?.addEventListener('click', () => {
+            if (this.currentView === 'dashboard') {
+                this.refreshDashboard();
+            }
+        });
+
+        // Dashboard time filter change
+        document.getElementById('dashboard-time-filter')?.addEventListener('change', () => {
+            if (this.currentView === 'dashboard') {
+                this.refreshDashboard();
+            }
+        });
+
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => this.setActiveTab(tab.dataset.tab));
@@ -115,6 +135,112 @@ const App = {
         });
 
         this.updatePreview();
+    },
+
+    /**
+     * Set active top-level view (Dashboard / Operations)
+     * @param {string} viewName - 'dashboard' | 'operations'
+     */
+    setActiveView(viewName) {
+        this.currentView = viewName;
+
+        // Toggle buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === viewName);
+        });
+
+        // Toggle content containers
+        document.querySelectorAll('.main-view').forEach(view => {
+            view.classList.toggle('active', view.id === `view-${viewName}`);
+        });
+
+        // Auto-refresh dashboard when entering it
+        if (viewName === 'dashboard') {
+            this.refreshDashboard();
+        }
+    },
+
+    /**
+     * Refresh dashboard data from selected graphs
+     */
+    async refreshDashboard() {
+        const container = document.getElementById('dashboard-content');
+        const timeFilter = document.getElementById('dashboard-time-filter')?.value || 'all';
+
+        let since = 0;
+        let until = Infinity;
+        const now = new Date();
+
+        if (timeFilter === 'today') {
+            now.setHours(0, 0, 0, 0);
+            since = now.getTime();
+        } else if (timeFilter === 'yesterday') {
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+            until = today.getTime();
+
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            since = yesterday.getTime();
+        } else if (timeFilter === 'week') {
+            now.setHours(0, 0, 0, 0);
+            now.setDate(now.getDate() - 7);
+            since = now.getTime();
+        }
+
+        if (this.selectedGraphs.size === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📊</div>
+                    <p>Selecciona grafos en el panel izquierdo para ver su actividad reciente.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `<div class="empty-state"><div class="spinner" style="margin: 0 auto 16px;"></div><p>Cargando actividad...</p></div>`;
+
+        let allActivity = [];
+
+        // Fetch concurrently from selected graphs
+        const promises = Array.from(this.selectedGraphs).map(async graphName => {
+            const config = Storage.getGraph(graphName);
+            if (!config) return;
+
+            try {
+                const graph = RoamAPI.initGraph(graphName, config.token);
+                // Si hay filtro, traemos más items para no perder coincidencias antiguas
+                const limit = timeFilter === 'all' ? 15 : 100;
+
+                // Fire both queries
+                const [pages, edits] = await Promise.all([
+                    RoamAPI.getRecentPages(graph, limit),
+                    RoamAPI.getRecentEdits(graph, limit)
+                ]);
+                return [...pages, ...edits];
+            } catch (error) {
+                console.error(`Error loading activity for ${graphName}:`, error);
+                Storage.addLog('error', `Dashboard: Falló carga de ${graphName}`);
+                return [];
+            }
+        });
+
+        const results = await Promise.all(promises);
+
+        // Flatten and sort by time descending
+        results.forEach(res => {
+            if (res) allActivity = allActivity.concat(res);
+        });
+
+        // Filtrar localmente por tiempo
+        if (timeFilter !== 'all') {
+            allActivity = allActivity.filter(item => item.time >= since && item.time < until);
+        }
+
+        allActivity.sort((a, b) => b.time - a.time);
+
+        // Render top 30 mixed events
+        UI.renderDashboardActivity(container, allActivity.slice(0, 30));
     },
 
     /**
@@ -219,8 +345,13 @@ const App = {
         } else {
             this.selectedGraphs.delete(name);
         }
-        // ONLY update the preview, DO NOT reload all graphs destroying the DOM list
-        this.updatePreview();
+
+        // Update specific view based on what is active
+        if (this.currentView === 'dashboard') {
+            this.refreshDashboard();
+        } else {
+            this.updatePreview();
+        }
     },
 
     /**

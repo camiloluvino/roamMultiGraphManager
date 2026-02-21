@@ -4,10 +4,12 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 
 ## 🚀 Características
 
+- **Dashboard de Actividad:** Visualización read-only de páginas creadas y bloques modificados recientemente
+- **Filtros Temporales:** Consulta actividad de "Hoy", "Ayer" o "Esta Semana" en todos tus grafos
 - **Crear páginas** en múltiples grafos con un solo clic
 - **Modificar títulos** de páginas existentes
 - **Eliminar páginas** con confirmación de seguridad
-- **Gestión de hasta 15 grafos** con sus tokens de API
+- **Gestión de múltiples grafos** con sus tokens de API
 - **Preview antes de ejecutar** cada operación
 - **Historial de operaciones** con logs detallados
 

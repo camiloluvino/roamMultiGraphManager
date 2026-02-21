@@ -50,7 +50,9 @@ const RoamAPI = {
             }
 
             try {
-                return JSON.parse(text);
+                const data = JSON.parse(text);
+                // La API REST de Roam envuelve los resultados de 'q' y 'pull' en un objeto { result: [...] }
+                return (data && data.result !== undefined) ? data.result : data;
             } catch {
                 return text; // Some endpoints might return OK with no JSON
             }

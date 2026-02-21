@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roam Multi-Graph Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
   <div class="app-container">
     <!-- Header -->
@@ -21,7 +25,7 @@
 
     <!-- Main Grid -->
     <div class="main-grid">
-      <!-- Sidebar: Graph Configuration -->
+      <!-- Sidebar -->
       <aside>
         <div class="card">
           <div class="card-header">
@@ -71,71 +75,110 @@
         </div>
       </aside>
 
-      <!-- Main Content: Operations -->
+      <!-- Main Content -->
       <main>
-        <div class="card">
-          <!-- Tabs -->
-          <div class="tabs">
-            <button class="tab active" data-tab="create">➕ Crear</button>
-            <button class="tab" data-tab="update">✏️ Modificar</button>
-            <button class="tab" data-tab="delete">🗑️ Eliminar</button>
+        <!-- Top Level Navigation Toggle -->
+        <div class="top-nav-toggle">
+          <button class="nav-btn active" data-view="dashboard">
+            <span class="icon">👁️</span> Dashboard
+          </button>
+          <button class="nav-btn" data-view="operations">
+            <span class="icon">⚡</span> Operaciones
+          </button>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="main-view active">
+          <div class="dashboard-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+            <h2>Actividad Reciente</h2>
+            <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+              <select id="dashboard-time-filter" class="form-control"
+                style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-primary); font-family: inherit; font-size: 0.875rem; cursor: pointer;">
+                <option value="today">Hoy</option>
+                <option value="yesterday">Ayer</option>
+                <option value="week">Esta semana</option>
+                <option value="all">Todo</option>
+              </select>
+              <button id="btn-refresh-dashboard" class="btn btn-secondary" title="Actualizar">↻ Refresh</button>
+            </div>
           </div>
 
-          <!-- Create Tab -->
-          <div id="tab-create" class="tab-content active">
-            <form id="form-create" class="operation-form">
-              <div class="form-group">
-                <label for="create-title">Título de la página *</label>
-                <input type="text" id="create-title" placeholder="Mi Nueva Página" required>
-              </div>
-              <div class="form-group">
-                <label for="create-content">Contenido inicial (opcional)</label>
-                <textarea id="create-content" placeholder="- Primer bloque&#10;- Segundo bloque&#10;- Tercer bloque"></textarea>
-                <p class="hint">Una línea por bloque. Se crearán como bloques hijos de la página.</p>
-              </div>
-              <div class="btn-group">
-                <button type="submit" class="btn btn-success">✓ Crear Página</button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Update Tab -->
-          <div id="tab-update" class="tab-content">
-            <form id="form-update" class="operation-form">
-              <div class="form-group">
-                <label for="update-search">Buscar página (título exacto) *</label>
-                <input type="text" id="update-search" placeholder="Título actual de la página" required>
-              </div>
-              <div class="form-group">
-                <label for="update-title">Nuevo título *</label>
-                <input type="text" id="update-title" placeholder="Nuevo título para la página" required>
-              </div>
-              <div class="btn-group">
-                <button type="submit" class="btn btn-primary">✏️ Modificar Página</button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Delete Tab -->
-          <div id="tab-delete" class="tab-content">
-            <form id="form-delete" class="operation-form">
-              <div class="form-group">
-                <label for="delete-search">Página a eliminar (título exacto) *</label>
-                <input type="text" id="delete-search" placeholder="Título de la página a eliminar" required>
-                <p class="hint">⚠️ Esta acción no se puede deshacer</p>
-              </div>
-              <div class="btn-group">
-                <button type="submit" class="btn btn-danger">🗑️ Eliminar Página</button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Preview Panel -->
-          <div id="preview-panel" class="preview-panel">
-            <h3>📋 Preview</h3>
-            <p class="hint">Selecciona grafos y completa el formulario para ver el preview</p>
+          <div id="dashboard-content" class="dashboard-content">
+            <div class="empty-state">
+              <div class="icon">📊</div>
+              <p>Selecciona grafos en el panel izquierdo para ver su actividad reciente.</p>
+            </div>
           </div>
         </div>
+
+        <!-- Operations View -->
+        <div id="view-operations" class="main-view">
+          <div class="card">
+            <!-- Tabs -->
+            <div class="tabs">
+              <button class="tab active" data-tab="create">➕ Crear</button>
+              <button class="tab" data-tab="update">✏️ Modificar</button>
+              <button class="tab" data-tab="delete">🗑️ Eliminar</button>
+            </div>
+
+            <!-- Create Tab -->
+            <div id="tab-create" class="tab-content active">
+              <form id="form-create" class="operation-form">
+                <div class="form-group">
+                  <label for="create-title">Título de la página *</label>
+                  <input type="text" id="create-title" placeholder="Mi Nueva Página" required>
+                </div>
+                <div class="form-group">
+                  <label for="create-content">Contenido inicial (opcional)</label>
+                  <textarea id="create-content"
+                    placeholder="- Primer bloque&#10;- Segundo bloque&#10;- Tercer bloque"></textarea>
+                  <p class="hint">Una línea por bloque. Se crearán como bloques hijos de la página.</p>
+                </div>
+                <div class="btn-group">
+                  <button type="submit" class="btn btn-success">✓ Crear Página</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Update Tab -->
+            <div id="tab-update" class="tab-content">
+              <form id="form-update" class="operation-form">
+                <div class="form-group">
+                  <label for="update-search">Buscar página (título exacto) *</label>
+                  <input type="text" id="update-search" placeholder="Título actual de la página" required>
+                </div>
+                <div class="form-group">
+                  <label for="update-title">Nuevo título *</label>
+                  <input type="text" id="update-title" placeholder="Nuevo título para la página" required>
+                </div>
+                <div class="btn-group">
+                  <button type="submit" class="btn btn-primary">✏️ Modificar Página</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Delete Tab -->
+            <div id="tab-delete" class="tab-content">
+              <form id="form-delete" class="operation-form">
+                <div class="form-group">
+                  <label for="delete-search">Página a eliminar (título exacto) *</label>
+                  <input type="text" id="delete-search" placeholder="Título de la página a eliminar" required>
+                  <p class="hint">⚠️ Esta acción no se puede deshacer</p>
+                </div>
+                <div class="btn-group">
+                  <button type="submit" class="btn btn-danger">🗑️ Eliminar Página</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Preview Panel -->
+            <div id="preview-panel" class="preview-panel">
+              <h3>📋 Preview</h3>
+              <p class="hint">Selecciona grafos y completa el formulario para ver el preview</p>
+            </div>
+            <!-- End Operations View -->
+          </div>
       </main>
     </div>
   </div>
@@ -180,4 +223,5 @@
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>
