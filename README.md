@@ -4,14 +4,14 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 
 ## 🚀 Características
 
-- **Dashboard de Actividad:** Visualización read-only de páginas creadas y bloques modificados recientemente
-- **Filtros Temporales:** Consulta actividad de "Hoy", "Ayer" o "Esta Semana" en todos tus grafos
-- **Crear páginas** en múltiples grafos con un solo clic
-- **Modificar títulos** de páginas existentes
-- **Eliminar páginas** con confirmación de seguridad
-- **Gestión de múltiples grafos** con sus tokens de API
-- **Preview antes de ejecutar** cada operación
-- **Historial de operaciones** con logs detallados
+- **Dashboard Tabular:** Vista compacta y organizada de la actividad reciente en 5 columnas.
+- **Filtros Avanzados:** Filtra por tiempo (Hoy/Ayer/Semana), tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque).
+- **Gestión Segura de Grafos:** Nueva pestaña de configuración con diseño de dos columnas para gestionar tokens y activar grafos.
+- **Sidebar Dinámico:** Muestra únicamente los grafos activados para reducir ruido visual durante las operaciones.
+- **Crear páginas** en múltiples grafos con un solo clic.
+- **Modificar títulos** de páginas existentes.
+- **Eliminar páginas** con confirmación de seguridad.
+- **Preview antes de ejecutar** cada operación.
 
 ## 📋 Requisitos
 
@@ -33,13 +33,13 @@ Para cada grafo que quieras gestionar:
 6. Selecciona el scope **edit** (para poder crear/modificar/eliminar)
 7. Copia el token generado
 
-### 2. Agregar Grafos a la App
+### 2. Configurar y Activar Grafos
 
-1. Abre `index.html` en tu navegador
-2. En el panel izquierdo, ingresa el nombre del grafo (exactamente como aparece en Roam)
-3. Pega el API Token
-4. Click en "Agregar Grafo"
-5. Repite para cada grafo
+1. Abre `index.html` en tu navegador.
+2. Ve a la nueva pestaña **⚙️ Configuración**.
+3. En el panel izquierdo, ingresa el nombre del grafo y su API Token, luego click en **Agregar Grafo**.
+4. En el panel derecho (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
+5. Los grafos seleccionados aparecerán automáticamente en la barra lateral izquierda bajo **📂 Grafos (Activos)**.
 
 ## 🎯 Uso
 

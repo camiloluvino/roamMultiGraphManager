@@ -3,7 +3,7 @@
  * Handles local persistence of configuration and logs
  */
 
-export const Storage = {
+const Storage = {
     KEYS: {
         GRAPHS: 'roam_mg_graphs',
         LOGS: 'roam_mg_logs'

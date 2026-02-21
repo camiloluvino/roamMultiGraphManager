@@ -2,17 +2,21 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.2** (Refactor a ES Modules)
+**v0.1.3** (Refactor de UI y Dashboard Dinámico)
 
 ## 2. Estado de Funcionalidades
-- 🟢 **UI General:** Implementada. Tabs, layouts y modales están construidos visualmente.
-- 🟢 **Controlador (App):** Lógica principal escrita y refactorizada (`app.js`).
-- 🟢 **Componentes (UI):** Funciones de manipulación del DOM, con protección básica anti-XSS (`ui.js`).
-- 🟢 **Gestión de Almacenamiento:** Implementada con `localStorage` (`storage.js`).
-- 🟢 **Integración Roam API:** Implementada síncrona/fetch wrapper (`api.js`).
+- 🟢 **UI General:** Reestructurada. Implementado layout de dos columnas en configuración y vista tabular en dashboard.
+- 🟢 **Dashboard Avanzado:** Implementado sistema de filtros por Acción (Creación/Modificación) y Tipo (Página/Bloque).
+- 🟢 **Controlador (App):** Sincronización de estados entre múltiples vistas de grafos (Activos vs. Todos).
+- 🟢 **Componentes (UI):** Renderizado tabular y dinámico en Dashboard.
+- 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
+- 🟢 **Integración Roam API:** Pull de actividad mejorado.
 
 ## 3. Historial Reciente
-- **MODERNIZACIÓN Y LIMPIEZA:** Se reorganizó la estructura de carpetas moviendo archivos de documentación grandes a `docs/`. Se realizó la transición completa a **ES Modules** (`type="module"`), eliminando la carga global de scripts en el HTML y utilizando `import/export` para gestionar dependencias entre `app.js`, `api.js`, `storage.js` y `ui.js`.
+- **FILTROS AVANZADOS EN DASHBOARD:** Se añadieron nuevos dropdowns de filtrado por tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque). La lógica en `app.js` ahora cruza estos filtros con el filtro temporal para ofrecer una vista precisa de la actividad.
+- **TABULARIZACIÓN DEL DASHBOARD:** Se rediseñó el feed de actividad de una lista vertical simple a una tabla compacta de 5 columnas (Elemento, Acción, Tipo, Grafo, Fecha), mejorando drásticamente el uso del espacio horizontal y la legibilidad.
+- **REORDENAMIENTO DE UI Y GESTIÓN DE GRAFOS:** Se split-teó la lista de grafos en dos conceptos: "Tus Grafos" (configuración completa con checkboxes y delete) en la pestaña de Configuración, y "Grafos Activos" (lista limpia de operaciones) en la barra lateral. Se implementó un layout de dos columnas en la pestaña de Configuración para un acceso más eficiente.
+- **MODERNIZACIÓN Y LIMPIEZA:** Se reorganizó la estructura de carpetas... (omitido para brevedad)
 - **MEJORA DE DASHBOARD:** Se añadió un filtro por fecha ("Hoy", "Ayer", "Esta semana", "Todo") en la pestaña Dashboard. Modificando `index.html` y actualizando la lógica en `app.js` para filtrar localmente y obtener dinámicamente mayor cantidad de registros base cuando hay un filtro temporal activo.
 - **CORRECCIÓN DE DASHBOARD:** Se solucionó el problema donde el panel de Actividad Reciente del Dashboard aparecía vacío ("No se encontró actividad reciente"). Se diagnosticó que la API REST de Roam devuelve las respuestas de consultas de Datomic (endpoint `/q`) envueltas en un objeto `{ result: [...] }`, lo cual rompía el chequeo `Array.isArray()` en el renderizado del feed. Se modificó el parser de peticiones de red en `api.js` para desenvolver automáticamente la propiedad `result` cuando está presente.
 - **CORRECCIÓN CRÍTICA DE API:** Se diagnosticó y corrigió el error de conexión de red 401/404 al integrar la API de Roam Research. Se reemplazó el endpoint inválido `/read` por `/q` y `/pull`, se formateó la escritura con `batch-actions` para el endpoint `/write`, y se corrigió el encabezado de autenticación a `X-Authorization` según los requerimientos restritos de la API externa de Roam.

@@ -3,7 +3,7 @@
  * Wrapper for Roam Research API operations
  */
 
-export const RoamAPI = {
+const RoamAPI = {
     /**
      * Initialize graph configuration object
      * @param {string} name - Graph name

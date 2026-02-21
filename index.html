@@ -29,36 +29,16 @@
       <aside>
         <div class="card">
           <div class="card-header">
-            <h2><span class="icon">⚙️</span> Grafos</h2>
+            <h2><span class="icon">📂</span> Grafos</h2>
           </div>
 
-          <!-- Add Graph Form -->
-          <form id="add-graph-form">
-            <div class="form-group">
-              <label for="graph-name">Nombre del grafo</label>
-              <input type="text" id="graph-name" placeholder="mi-grafo" required>
-            </div>
-            <div class="form-group">
-              <label for="graph-token">API Token</label>
-              <input type="password" id="graph-token" placeholder="roam-graph-token-..." required>
-              <p class="hint">Obtén el token en Settings → Graph → API Tokens</p>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
-              ➕ Agregar Grafo
-            </button>
-          </form>
-
-          <!-- Graph List -->
-          <div style="margin-top: var(--spacing-lg);">
+          <!-- Active Graph List -->
+          <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-              <span style="font-size: 0.875rem; color: var(--text-secondary);">Grafos configurados</span>
-              <div>
-                <button id="btn-select-all" class="btn btn-ghost" title="Seleccionar todos">☑</button>
-                <button id="btn-select-none" class="btn btn-ghost" title="Deseleccionar todos">☐</button>
-              </div>
+              <span style="font-size: 0.875rem; color: var(--text-secondary);">Grafos activos</span>
             </div>
-            <div id="graph-list" class="graph-list">
-              <!-- Graphs rendered here -->
+            <div id="active-graph-list" class="graph-list">
+              <!-- Active graphs rendered here -->
             </div>
           </div>
         </div>
@@ -85,6 +65,9 @@
           <button class="nav-btn" data-view="operations">
             <span class="icon">⚡</span> Operaciones
           </button>
+          <button class="nav-btn" data-view="config">
+            <span class="icon">⚙️</span> Configuración
+          </button>
         </div>
 
         <!-- Dashboard View -->
@@ -92,13 +75,25 @@
           <div class="dashboard-header"
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
             <h2>Actividad Reciente</h2>
-            <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+            <div style="display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
+              <select id="dashboard-action-filter" class="form-control"
+                style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-primary); font-family: inherit; font-size: 0.875rem; cursor: pointer;">
+                <option value="all">Todas Acciones</option>
+                <option value="create">Creación</option>
+                <option value="edit">Modificación</option>
+              </select>
+              <select id="dashboard-type-filter" class="form-control"
+                style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-primary); font-family: inherit; font-size: 0.875rem; cursor: pointer;">
+                <option value="all">Todos Tipos</option>
+                <option value="page">Página</option>
+                <option value="block">Bloque</option>
+              </select>
               <select id="dashboard-time-filter" class="form-control"
                 style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-primary); font-family: inherit; font-size: 0.875rem; cursor: pointer;">
                 <option value="today">Hoy</option>
                 <option value="yesterday">Ayer</option>
                 <option value="week">Esta semana</option>
-                <option value="all">Todo</option>
+                <option value="all">Todo el tiempo</option>
               </select>
               <button id="btn-refresh-dashboard" class="btn btn-secondary" title="Actualizar">↻ Refresh</button>
             </div>
@@ -179,6 +174,58 @@
             </div>
             <!-- End Operations View -->
           </div>
+        </div>
+
+        <!-- Configuration View -->
+        <div id="view-config" class="main-view">
+          <div class="config-grid">
+            <!-- Add Graph Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2><span class="icon">⚙️</span> Configuración de Grafos</h2>
+              </div>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                Agrega los tokens de la API de Rest de tus diferentes grafos de Roam para poder interactuar con ellos
+                desde la aplicación.
+              </p>
+
+              <!-- Add Graph Form -->
+              <form id="add-graph-form">
+                <div class="form-group">
+                  <label for="graph-name">Nombre del grafo</label>
+                  <input type="text" id="graph-name" placeholder="mi-grafo" required>
+                </div>
+                <div class="form-group">
+                  <label for="graph-token">API Token</label>
+                  <input type="password" id="graph-token" placeholder="roam-graph-token-..." required>
+                  <p class="hint">Obtén el token en Settings → Graph → API Tokens</p>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                  ➕ Agregar Grafo
+                </button>
+              </form>
+            </div>
+
+            <!-- All Graphs List -->
+            <div class="card">
+              <div class="card-header">
+                <h2><span class="icon">📋</span> Tus Grafos</h2>
+                <div>
+                  <button id="btn-select-all" class="btn btn-ghost" title="Seleccionar todos">☑</button>
+                  <button id="btn-select-none" class="btn btn-ghost" title="Deseleccionar todos"
+                    style="margin-left: 4px;">☐</button>
+                </div>
+              </div>
+              <p
+                style="color: var(--text-secondary); margin-top: var(--spacing-xs); margin-bottom: var(--spacing-md); font-size: 0.875rem;">
+                Selecciona los grafos que deseas tener activos en la aplicación.
+              </p>
+              <div id="all-graph-list" class="graph-list">
+                <!-- All graphs rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -218,7 +265,10 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Scripts -->
-  <script type="module" src="js/app.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
 </body>
 
 </html>

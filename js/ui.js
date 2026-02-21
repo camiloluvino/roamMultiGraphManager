@@ -3,7 +3,7 @@
  * Handles UI components and interactions
  */
 
-export const UI = {
+const UI = {
     /**
      * Show a toast notification
      * @param {string} message - Notification message
@@ -104,12 +104,43 @@ export const UI = {
     },
 
     /**
-     * Render graph list
+     * Render active graph list (sidebar)
+     * @param {HTMLElement} container - Container element
+     * @param {Set} selectedGraphs - Selected graph names
+     * @param {Object} graphs - Graph configurations
+     */
+    renderActiveGraphsList(container, selectedGraphs, graphs) {
+        if (selectedGraphs.size === 0) {
+            container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon" style="margin-bottom: var(--spacing-xs);">📭</div>
+          <p>Ningún grafo seleccionado</p>
+          <p class="hint" style="font-size: 0.75rem;">Ve a Configuración para elegir</p>
+        </div>
+      `;
+            return;
+        }
+
+        container.innerHTML = Array.from(selectedGraphs).map(name => {
+            const config = graphs[name];
+            if (!config) return '';
+            const escapedName = this.escapeHTML(name);
+            return `
+      <div class="graph-item selected" data-graph="${escapedName}">
+        <span class="graph-name">${escapedName}</span>
+        <span class="graph-status ${config.status === 'error' ? 'error' : ''}">${this.getStatusText(config.status)}</span>
+        <button class="btn btn-ghost btn-deselect" title="Quitar de selección" style="opacity: 0.6; font-size: 0.8em;">✕</button>
+      </div>
+    `}).join('');
+    },
+
+    /**
+     * Render all configured graphs list (config tab)
      * @param {HTMLElement} container - Container element
      * @param {Object} graphs - Graph configurations
      * @param {Set} selectedGraphs - Selected graph names
      */
-    renderGraphList(container, graphs, selectedGraphs) {
+    renderAllGraphsList(container, graphs, selectedGraphs) {
         const graphEntries = Object.entries(graphs);
 
         if (graphEntries.length === 0) {
@@ -117,13 +148,13 @@ export const UI = {
         <div class="empty-state">
           <div class="icon">📊</div>
           <p>No hay grafos configurados</p>
-          <p class="hint">Agrega un grafo para comenzar</p>
+          <p class="hint">Agrega un grafo desde el formulario superior</p>
         </div>
       `;
             return;
         }
 
-        // Using template literals but we will escape the dynamic user-input string `name` to prevent XSS
+        // Using template literals to render
         container.innerHTML = graphEntries.map(([name, config]) => {
             const escapedName = this.escapeHTML(name);
             return `
@@ -131,7 +162,7 @@ export const UI = {
         <input type="checkbox" class="checkbox" ${selectedGraphs.has(name) ? 'checked' : ''}>
         <span class="graph-name">${escapedName}</span>
         <span class="graph-status ${config.status === 'error' ? 'error' : ''}">${this.getStatusText(config.status)}</span>
-        <button class="btn btn-ghost btn-remove" title="Eliminar grafo">✕</button>
+        <button class="btn btn-ghost btn-remove" title="Eliminar configuración del grafo" style="opacity: 0.6;">🗑️</button>
       </div>
     `}).join('');
     },
@@ -298,10 +329,25 @@ export const UI = {
             return;
         }
 
-        container.innerHTML = activities.map(item => {
+        const headerHTML = `
+            <div class="activity-list-header">
+                <div>Elemento afectado</div>
+                <div>Acción</div>
+                <div>Tipo</div>
+                <div>Grafo</div>
+                <div>Fecha</div>
+            </div>
+        `;
+
+        const listHTML = activities.map(item => {
             const isCreate = item.type === 'create';
-            const icon = isCreate ? '🟢' : '✏️';
-            const actionText = isCreate ? 'Creada' : 'Modificada';
+
+            const actionText = isCreate ? 'Creación' : 'Modificación';
+            const actionIcon = isCreate ? '✨' : '✏️';
+
+            const elementText = isCreate ? 'Página' : 'Bloque';
+            const elementIcon = isCreate ? '📄' : '🧱';
+
             const title = isCreate ? item.title : item.pageTitle;
             const timeStr = new Date(item.time).toLocaleString('es', {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -309,20 +355,27 @@ export const UI = {
 
             return `
                 <div class="activity-item">
-                    <div class="activity-header">
-                        <span class="activity-meta">
-                            <span title="${actionText}">${icon}</span>
-                            <span>${timeStr}</span>
-                        </span>
-                        <span class="activity-graph">${this.escapeHTML(item.graph)}</span>
+                    <div class="cell-content">
+                        <div class="title-text" title="${this.escapeHTML(title || 'Sin Título')}">${this.escapeHTML(title || 'Sin Título')}</div>
+                        ${!isCreate && item.content ? `<div class="snippet-text" title="${this.escapeHTML(item.content)}">${this.escapeHTML(item.content)}</div>` : ''}
                     </div>
-                    <div class="activity-title">
-                        ${this.escapeHTML(title || 'Sin Título')}
+                    <div class="cell-badge">
+                        <span class="badge ${isCreate ? 'badge-success' : 'badge-pending'}" title="${actionText}">${actionIcon} ${actionText}</span>
                     </div>
-                    ${!isCreate && item.content ? `<div class="hint" style="margin-top: 4px; border-left: 2px solid var(--border-color); padding-left: 8px;">${this.escapeHTML(item.content.substring(0, 100))}${item.content.length > 100 ? '...' : ''}</div>` : ''}
+                    <div class="cell-badge">
+                        <span class="badge" style="background: var(--bg-tertiary); color: var(--text-secondary);" title="${elementText}">${elementIcon} ${elementText}</span>
+                    </div>
+                    <div class="cell-text">
+                        <span class="graph-pill" title="${this.escapeHTML(item.graph)}">${this.escapeHTML(item.graph)}</span>
+                    </div>
+                    <div class="cell-text time-text">
+                        ${timeStr}
+                    </div>
                 </div>
             `;
         }).join('');
+
+        container.innerHTML = `<div class="activity-table">${headerHTML}<div class="activity-table-body">${listHTML}</div></div>`;
     }
 };
 

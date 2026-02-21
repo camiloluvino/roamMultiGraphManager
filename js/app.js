@@ -1,8 +1,4 @@
-import { Storage } from './storage.js';
-import { RoamAPI } from './api.js';
-import { UI } from './ui.js';
-
-export const App = {
+const App = {
     selectedGraphs: new Set(),
     currentOperation: 'create',
     currentView: 'dashboard', // default top-level view
@@ -11,10 +7,42 @@ export const App = {
      * Initialize the application
      */
     init() {
+        this.seedDefaultGraphs();
         this.bindEvents();
         this.loadGraphs();
         this.renderLogs();
         this.setActiveTab('create');
+    },
+
+    /**
+     * Seed default graphs from config
+     */
+    seedDefaultGraphs() {
+        const defaultGraphs = {
+            "metodometodo": "roam-graph-token-sVJ9No69ESjfTCR60yKJzYImUTE67",
+            "metodoMetodo_pensiero": "roam-graph-token-wDAIAWQfMpdfz_2yN7SFFBW0BefOD",
+            "teson": "roam-graph-token-udznoik4TDVrCFM4EuQtivBfcN4fW",
+            "teson_labmet": "roam-graph-token-Y0YY_J_Xn-l75hWclNZmk3O4q0_ek",
+            "teson_taller": "roam-graph-token-mny9cg7j2XLLdzphsh2N89eiP14By",
+            "mentographus": "roam-graph-token-MYpNKkFDjDCDWLsDx9f6jR4OnZ_Em",
+            "terrenal_mh": "roam-graph-token-3zC91QuzJLljptDbOX6MEkRtSsNtX",
+            "estoesTeoriaAvanzada": "roam-graph-token-9km0AjKE-WjFl-NrksFSRACIIcaV_",
+            "estoesTeoriaAvanzada_psico": "roam-graph-token-2nOTXcZk5oL2qNZdoUEmUGrtGop5f"
+        };
+
+        const currentGraphs = Storage.getGraphs();
+        let added = false;
+
+        for (const [name, token] of Object.entries(defaultGraphs)) {
+            if (!currentGraphs[name]) {
+                Storage.saveGraph(name, token);
+                added = true;
+            }
+        }
+
+        if (added) {
+            Storage.addLog('info', 'Grafos por defecto cargados automáticamente.');
+        }
     },
 
     /**
@@ -33,11 +61,14 @@ export const App = {
             }
         });
 
-        // Dashboard time filter change
-        document.getElementById('dashboard-time-filter')?.addEventListener('change', () => {
-            if (this.currentView === 'dashboard') {
-                this.refreshDashboard();
-            }
+        // Dashboard filters change
+        const filters = ['dashboard-time-filter', 'dashboard-action-filter', 'dashboard-type-filter'];
+        filters.forEach(filterId => {
+            document.getElementById(filterId)?.addEventListener('change', () => {
+                if (this.currentView === 'dashboard') {
+                    this.refreshDashboard();
+                }
+            });
         });
 
         // Tab switching
@@ -51,8 +82,8 @@ export const App = {
             this.addGraph();
         });
 
-        // Graph list interactions
-        document.getElementById('graph-list').addEventListener('click', (e) => {
+        // All graphs list interactions (Config Tab)
+        document.getElementById('all-graph-list')?.addEventListener('click', (e) => {
             const graphItem = e.target.closest('.graph-item');
             if (!graphItem) return;
 
@@ -64,15 +95,37 @@ export const App = {
                 const checkbox = graphItem.querySelector('.checkbox');
 
                 // If container clicked, toggle the checkbox checked state
-                if (!isCheckbox) {
+                if (!isCheckbox && checkbox) {
                     checkbox.checked = !checkbox.checked;
                 }
 
-                // Update graph UI selection without destructive rerender
-                UI.toggleGraphItemSelection(graphItem, checkbox.checked);
+                if (checkbox) {
+                    // Update graph UI selection without destructive rerender
+                    UI.toggleGraphItemSelection(graphItem, checkbox.checked);
+                    // Update internal state
+                    this.toggleGraphSelection(graphItem.dataset.graph, checkbox.checked);
+                }
+            }
+        });
 
-                // Update internal state
-                this.toggleGraphSelection(graphItem.dataset.graph, checkbox.checked);
+        // Active Graph list interactions (Sidebar)
+        document.getElementById('active-graph-list')?.addEventListener('click', (e) => {
+            const graphItem = e.target.closest('.graph-item');
+            if (!graphItem) return;
+
+            if (e.target.classList.contains('btn-deselect')) {
+                this.toggleGraphSelection(graphItem.dataset.graph, false);
+                // Also update the UI in the all-graph-list if available
+                const allList = document.getElementById('all-graph-list');
+                if (allList) {
+                    // Try to toggle visually to avoid full reload
+                    const item = allList.querySelector(`[data-graph="${CSS.escape(graphItem.dataset.graph)}"]`);
+                    if (item) {
+                        const cb = item.querySelector('.checkbox');
+                        if (cb) cb.checked = false;
+                        UI.toggleGraphItemSelection(item, false);
+                    }
+                }
             }
         });
 
@@ -164,7 +217,10 @@ export const App = {
      */
     async refreshDashboard() {
         const container = document.getElementById('dashboard-content');
+        // Filtering implementation
         const timeFilter = document.getElementById('dashboard-time-filter')?.value || 'all';
+        const actionFilter = document.getElementById('dashboard-action-filter')?.value || 'all';
+        const typeFilter = document.getElementById('dashboard-type-filter')?.value || 'all';
 
         let since = 0;
         let until = Infinity;
@@ -231,9 +287,24 @@ export const App = {
             if (res) allActivity = allActivity.concat(res);
         });
 
-        // Filtrar localmente por tiempo
+        // Apply Time Filter
         if (timeFilter !== 'all') {
             allActivity = allActivity.filter(item => item.time >= since && item.time < until);
+        }
+
+        // Apply Action Filter
+        if (actionFilter !== 'all') {
+            allActivity = allActivity.filter(item => item.type === actionFilter);
+        }
+
+        // Apply Type Filter
+        if (typeFilter !== 'all') {
+            allActivity = allActivity.filter(item => {
+                // Determine item type based on whether it is a create or an edit (edits are mostly blocks with a few exceptions, creates are pages)
+                const isPage = item.type === 'create';
+                const itemType = isPage ? 'page' : 'block';
+                return itemType === typeFilter;
+            });
         }
 
         allActivity.sort((a, b) => b.time - a.time);
@@ -247,16 +318,23 @@ export const App = {
      */
     loadGraphs() {
         const graphs = Storage.getGraphs();
-        this.renderGraphList(graphs);
+        this.renderGraphLists(graphs);
     },
 
     /**
-     * Render graph list
+     * Render graph lists
      * @param {Object} graphs - Graph configurations
      */
-    renderGraphList(graphs) {
-        const container = document.getElementById('graph-list');
-        UI.renderGraphList(container, graphs, this.selectedGraphs);
+    renderGraphLists(graphs) {
+        const activeContainer = document.getElementById('active-graph-list');
+        const allContainer = document.getElementById('all-graph-list');
+
+        if (activeContainer) {
+            UI.renderActiveGraphsList(activeContainer, this.selectedGraphs, graphs);
+        }
+        if (allContainer) {
+            UI.renderAllGraphsList(allContainer, graphs, this.selectedGraphs);
+        }
     },
 
     /**
@@ -343,6 +421,13 @@ export const App = {
             this.selectedGraphs.add(name);
         } else {
             this.selectedGraphs.delete(name);
+        }
+
+        // Update active graphs view in sidebar
+        const graphs = Storage.getGraphs();
+        const activeContainer = document.getElementById('active-graph-list');
+        if (activeContainer) {
+            UI.renderActiveGraphsList(activeContainer, this.selectedGraphs, graphs);
         }
 
         // Update specific view based on what is active
