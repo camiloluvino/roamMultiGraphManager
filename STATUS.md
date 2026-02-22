@@ -2,17 +2,19 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.4** (Persistencia y Optimización de Consultas)
+**v0.1.5** (Modos de Visualización del Dashboard)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Reestructurada. Implementado layout de dos columnas en configuración y vista tabular en dashboard.
 - 🟢 **Dashboard Avanzado:** Implementado sistema de filtros por Acción (Creación/Modificación) y Tipo (Página/Bloque).
 - 🟢 **Controlador (App):** Sincronización de estados entre múltiples vistas de grafos (Activos vs. Todos).
-- 🟢 **Componentes (UI):** Renderizado tabular y dinámico en Dashboard.
+- 🟢 **Componentes (UI):** Renderizado dual (Acordeón/Tabular) en Dashboard con selector de vista.
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
 - 🟢 **Integración Roam API:** Pull de actividad mejorado.
 
 ## 3. Historial Reciente
+- **MODOS DE VISUALIZACIÓN EN DASHBOARD:** Se implementó un selector de vista dinámico en el Dashboard que permite alternar entre la vista de **Acordeones** (jerárquica por Grafo -> Página) y la vista de **Columnas** (tabla plana tradicional estilo Excel). Se ajustó el orden de las columnas en la vista tabular para priorizar el nombre del Grafo y se corrigieron errores de alineación en los controles del header.
+- **UI DASHBOARD AVANZADA (ACORDEONES):** Se rediseñó por completo el feed de Actividad Reciente del Dashboard. En lugar de una tabla plana, ahora la actividad se agrupa jerárquicamente: primero por Grafo y luego por Página afectada. Esto se logró modificando `ui.js` para usar agrupamiento en memoria (`reduce`), y `styles.css` con `app.js` para un sistema de acordeones anidados que ofrecen una vista ultra-compacta y eliminan el ruido visual.
 - **OPTIMIZACIÓN DE CONSULTAS (PUSH-DOWN):** Se rediseñaron las consultas Datalog en `api.js` para incluir filtros de tiempo directamente en la base de datos de Roam (`[(>= ?time ...)]`). Esto reduce drásticamente el volumen de datos transferidos desde la API, mejorando la velocidad de carga del Dashboard en un ~90% para grafos grandes.
 - **PERSISTENCIA DE SELECCIÓN:** Se implementó la persistencia de los grafos seleccionados en `localStorage`. La aplicación ahora recuerda qué grafos tenías activos entre recargas de página, eliminando la necesidad de re-seleccionarlos manualmente cada vez que se abre la herramienta.
 - **FILTROS AVANZADOS EN DASHBOARD:** Se añadieron nuevos dropdowns de filtrado por tipo de acción... (omitido para brevedad)

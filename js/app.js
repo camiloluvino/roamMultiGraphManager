@@ -84,7 +84,7 @@ const App = {
         });
 
         // Dashboard filters change
-        const filters = ['dashboard-time-filter', 'dashboard-action-filter', 'dashboard-type-filter'];
+        const filters = ['dashboard-time-filter', 'dashboard-action-filter', 'dashboard-type-filter', 'dashboard-view-mode'];
         filters.forEach(filterId => {
             document.getElementById(filterId)?.addEventListener('change', () => {
                 if (this.currentView === 'dashboard') {
@@ -191,6 +191,17 @@ const App = {
                 }
             });
         });
+
+        // Accordion interactions (Dashboard)
+        document.getElementById('dashboard-content')?.addEventListener('click', (e) => {
+            const header = e.target.closest('.accordion-header');
+            if (header) {
+                const item = header.closest('.accordion-item');
+                if (item) {
+                    item.classList.toggle('active');
+                }
+            }
+        });
     },
 
     /**
@@ -277,12 +288,12 @@ const App = {
 
         container.innerHTML = `<div class="empty-state"><div class="spinner" style="margin: 0 auto 16px;"></div><p>Cargando actividad...</p></div>`;
 
-        let allActivity = [];
+        let graphData = [];
 
         // Fetch concurrently from selected graphs
         const promises = Array.from(this.selectedGraphs).map(async graphName => {
             const config = Storage.getGraph(graphName);
-            if (!config) return;
+            if (!config) return { graphName, items: [], error: 'Configuración no encontrada' };
 
             try {
                 const graph = RoamAPI.initGraph(graphName, config.token);
@@ -294,45 +305,44 @@ const App = {
                     RoamAPI.getRecentPages(graph, limit, since, until),
                     RoamAPI.getRecentEdits(graph, limit, since, until)
                 ]);
-                return [...pages, ...edits];
+
+                let items = [...pages, ...edits];
+
+                // Apply Time Filter
+                if (timeFilter !== 'all') {
+                    items = items.filter(item => item.time >= since && item.time < until);
+                }
+
+                // Apply Action Filter
+                if (actionFilter !== 'all') {
+                    items = items.filter(item => item.type === actionFilter);
+                }
+
+                // Apply Type Filter
+                if (typeFilter !== 'all') {
+                    items = items.filter(item => {
+                        const isPage = item.type === 'create';
+                        const itemType = isPage ? 'page' : 'block';
+                        return itemType === typeFilter;
+                    });
+                }
+
+                items.sort((a, b) => b.time - a.time);
+
+                return { graphName, items: items.slice(0, 30), error: null };
             } catch (error) {
                 console.error(`Error loading activity for ${graphName}:`, error);
                 Storage.addLog('error', `Dashboard: Falló carga de ${graphName}`);
-                return [];
+                return { graphName, items: [], error: error.message };
             }
         });
 
-        const results = await Promise.all(promises);
+        graphData = await Promise.all(promises);
 
-        // Flatten and sort by time descending
-        results.forEach(res => {
-            if (res) allActivity = allActivity.concat(res);
-        });
+        const viewMode = document.getElementById('dashboard-view-mode')?.value || 'accordion';
 
-        // Apply Time Filter
-        if (timeFilter !== 'all') {
-            allActivity = allActivity.filter(item => item.time >= since && item.time < until);
-        }
-
-        // Apply Action Filter
-        if (actionFilter !== 'all') {
-            allActivity = allActivity.filter(item => item.type === actionFilter);
-        }
-
-        // Apply Type Filter
-        if (typeFilter !== 'all') {
-            allActivity = allActivity.filter(item => {
-                // Determine item type based on whether it is a create or an edit (edits are mostly blocks with a few exceptions, creates are pages)
-                const isPage = item.type === 'create';
-                const itemType = isPage ? 'page' : 'block';
-                return itemType === typeFilter;
-            });
-        }
-
-        allActivity.sort((a, b) => b.time - a.time);
-
-        // Render top 30 mixed events
-        UI.renderDashboardActivity(container, allActivity.slice(0, 30));
+        // Render events grouped by graph according to the selected view mode
+        UI.renderDashboardActivity(container, graphData, viewMode);
     },
 
     /**

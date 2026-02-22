@@ -825,3 +825,130 @@ h3 {
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+/* ============================================
+   Accordion Grid System (Activity Dashboard)
+   ============================================ */
+
+.activity-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.accordion-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.accordion-item.page-level {
+  background: var(--bg-tertiary);
+  margin: var(--spacing-sm) var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  transition: var(--transition-fast);
+}
+
+.accordion-header:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.accordion-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.accordion-header-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.page-level .accordion-header-title {
+  font-size: 0.95rem;
+  color: var(--accent-blue);
+}
+
+.accordion-header-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.accordion-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.accordion-chevron {
+  transition: transform 0.3s ease;
+  color: var(--text-muted);
+}
+
+.accordion-item.active>.accordion-header .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  display: none;
+  border-top: 1px solid var(--border-color);
+}
+
+.accordion-item.active>.accordion-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Redesigned activity block/item for accordion level */
+.activity-block-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition-fast);
+}
+
+.activity-block-item:last-child {
+  border-bottom: none;
+}
+
+.activity-block-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.block-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 50px;
+  padding-top: 2px;
+}
+
+.block-content {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.block-action-icon {
+  font-size: 1rem;
+  padding-top: 1px;
+}
