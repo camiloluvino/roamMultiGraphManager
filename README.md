@@ -5,8 +5,9 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 ## 🚀 Características
 
 - **Diseño Full-Width Minimalista:** Una interfaz limpia y profesional que utiliza todo el ancho de la pantalla para máxima visibilidad. Sin barras laterales distractoras.
-- **Dashboard Dinámico:** Selector de vista para alternar entre **Acordeones** (jerárquico Grafo → Página → Bloques) y **Columnas** (tabla plana tipo Excel).
-- **Registros (Marcadores Inteligentes):** Nueva pestaña dedicada a trackear páginas específicas de interés. Muestra automáticamente la **última fecha de modificación** y permite el **Auto-Escaneo** masivo de páginas basadas en patrones de nombre.
+- **Dashboard Dinámico:** Selector de vista para alternar entre **Acordeones** (jerárquico Grafo → Página → Bloques) y **Columnas** (tabla plana tipo Excel). Ordenamiento automático por actividad reciente.
+- **Grafos y Conversaciones (Marcadores Inteligentes):** Pestañas dedicadas a trackear páginas específicas como `/grafoDeDiscurso` o `/conversacionesChatbots`.
+- **Auto-Escaneo Masivo:** Descubrimiento automático de flujos de trabajo basados en patrones de nombre directamente en todos los grafos activos.
 - **Historial Dedicado:** Nueva pestaña que centraliza todos los logs de operaciones en una vista de pantalla completa.
 - **Filtros Avanzados:** Filtra por tiempo (Hoy/Ayer/Semana), tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque).
 - **Gestión de Grafos Mejorada:** Los grafos se gestionan y activan íntegramente desde la pestaña de Configuración, eliminando la necesidad de una barra lateral.
@@ -45,10 +46,10 @@ Para cada grafo que quieras gestionar:
 5. Los grafos seleccionados aparecerán en el panel derecho (**Grafos Activos**) para confirmar tu selección antes de operar.
 
 ### 3. Registrar Páginas de Interés (Manual o Auto)
-1. Ve a la pestaña **Registros**.
-2. **Método Automático:** Click en **🔍 Auto-Escanear "/grafoDeDiscurso"** para encontrar y registrar instantáneamente todas las páginas que sigan esta nomenclatura en tus grafos activos.
+1. Ve a la pestaña **Grafos** o **Conversaciones**.
+2. **Método Automático:** Click en **🔍 Auto-Escanear** para encontrar y registrar instantáneamente todas las páginas que sigan la nomenclatura correspondiente (`/grafoDeDiscurso` o `/conversacionesChatbots`) en tus grafos activos.
 3. **Método Manual:** Click en **+ Nuevo Registro**, selecciona el grafo y escribe el título exacto.
-4. Las páginas aparecerán en tu listado con monitoreo en vivo de su última fecha de actualización.
+4. Las páginas aparecerán en tu listado con monitoreo en vivo de su última fecha de actualización, ordenadas por actividad reciente.
 
 ## 🎯 Uso
 
