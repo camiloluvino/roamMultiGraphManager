@@ -214,6 +214,10 @@ const App = {
             document.getElementById('form-add-registro').reset();
         });
 
+        document.getElementById('btn-auto-scan-registros')?.addEventListener('click', () => {
+            this.autoScanRegistros();
+        });
+
         document.getElementById('form-add-registro')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.addRegistro();
@@ -796,6 +800,62 @@ const App = {
 
         this.refreshRegistros();
         this.renderLogs();
+    },
+
+    /**
+     * Auto scan configured active graphs for /grafoDeDiscurso
+     */
+    async autoScanRegistros() {
+        if (this.selectedGraphs.size === 0) {
+            UI.toast('Selecciona al menos un grafo activo', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-auto-scan-registros');
+        if (btn) UI.setButtonLoading(btn, true);
+
+        let addedCount = 0;
+        const currentRegistros = Storage.getRegistros();
+        const existingSet = new Set(currentRegistros.map(r => `${r.graph}::${r.title}`));
+
+        for (const graphName of this.selectedGraphs) {
+            const config = Storage.getGraph(graphName);
+            if (!config) continue;
+
+            try {
+                const graph = RoamAPI.initGraph(graphName, config.token);
+                // Hardcoded to suffix '/grafoDeDiscurso' per user requirement
+                const pages = await RoamAPI.getPagesBySuffix(graph, '/grafoDeDiscurso');
+
+                for (const title of pages) {
+                    const key = `${graphName}::${title}`;
+                    if (!existingSet.has(key)) {
+                        Storage.saveRegistro({ graph: graphName, title });
+                        existingSet.add(key);
+                        addedCount++;
+                    }
+                }
+            } catch (error) {
+                console.error(`Error escaneando ${graphName}:`, error);
+                Storage.addLog('error', `Error escaneando ${graphName}: ${error.message}`);
+                UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
+            }
+        }
+
+        if (btn) {
+            // Revert loading state
+            btn.disabled = false;
+            btn.innerHTML = '🔍 Auto-Escanear "/grafoDeDiscurso"';
+        }
+
+        if (addedCount > 0) {
+            UI.toast(`Se agregaron ${addedCount} nuevos registros automáticamente`, 'success');
+            Storage.addLog('success', `Auto-escaneo: ${addedCount} páginas agregadas`);
+            this.refreshRegistros();
+            this.renderLogs();
+        } else {
+            UI.toast('No se encontraron nuevos registros', 'info');
+        }
     },
 
     /**

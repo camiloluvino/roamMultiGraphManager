@@ -6,7 +6,7 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 
 - **Diseño Minimalista "Claude-like":** Una interfaz limpia, sin bordes innecesarios, que utiliza tipografía elegante (**Lora Serif**) y espacios en blanco para una experiencia de usuario premium y enfocada.
 - **Dashboard Dinámico:** Selector de vista para alternar entre **Acordeones** (jerárquico Grafo → Página → Bloques) y **Columnas** (tabla plana tipo Excel).
-- **Registros (Marcadores Inteligentes):** Nueva pestaña dedicada a trackear páginas específicas de interés manual. Muestra automáticamente la **última fecha de modificación** consultando en vivo a la API de Roam.
+- **Registros (Marcadores Inteligentes):** Nueva pestaña dedicada a trackear páginas específicas de interés. Muestra automáticamente la **última fecha de modificación** y permite el **Auto-Escaneo** masivo de páginas basadas en patrones de nombre.
 - **Filtros Avanzados:** Filtra por tiempo (Hoy/Ayer/Semana), tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque).
 - **Gestión Segura de Grafos:** Nueva pestaña de configuración con diseño de dos columnas para gestionar tokens y activar grafos.
 - **Persistencia de Selección:** Recuerda tus grafos activos automáticamente entre sesiones.
@@ -44,11 +44,11 @@ Para cada grafo que quieras gestionar:
 4. En el panel derecho (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
 5. Los grafos seleccionados aparecerán automáticamente en la barra lateral izquierda bajo **📂 Grafos (Activos)**.
 
-### 3. Registrar Páginas de Interés
+### 3. Registrar Páginas de Interés (Manual o Auto)
 1. Ve a la pestaña **Registros**.
-2. Click en **+ Nuevo Registro**.
-3. Selecciona el grafo y escribe el título exacto de la página (ej: `área/proyectos/grafoDeDiscurso`).
-4. La página aparecerá en tu listado y la aplicación consultará periódicamente (al cargar la vista) su última fecha de actualización.
+2. **Método Automático:** Click en **🔍 Auto-Escanear "/grafoDeDiscurso"** para encontrar y registrar instantáneamente todas las páginas que sigan esta nomenclatura en tus grafos activos.
+3. **Método Manual:** Click en **+ Nuevo Registro**, selecciona el grafo y escribe el título exacto.
+4. Las páginas aparecerán en tu listado con monitoreo en vivo de su última fecha de actualización.
 
 ## 🎯 Uso
 

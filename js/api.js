@@ -133,6 +133,21 @@ const RoamAPI = {
     },
 
     /**
+     * Get pages ending with a specific suffix
+     * @param {Object} graph - Graph config
+     * @param {string} suffix - Suffix to match 
+     * @returns {Promise<string[]>} Array of page titles
+     */
+    async getPagesBySuffix(graph, suffix) {
+        // Find all page titles, then filter in JS to avoid Datalog Regex differences
+        const query = `[:find ?title :where [?e :node/title ?title]]`;
+        const result = await this.q(graph, query);
+
+        if (!result || !Array.isArray(result)) return [];
+        return result.map(row => row[0] || '').filter(title => typeof title === 'string' && title.endsWith(suffix));
+    },
+
+    /**
      * Generates a random Roam-like UID (9 chars, alphanumeric)
      * @returns {string} uid
      */
