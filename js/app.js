@@ -339,7 +339,7 @@ const App = {
 
         graphData = await Promise.all(promises);
 
-        const viewMode = document.getElementById('dashboard-view-mode')?.value || 'accordion';
+        const viewMode = document.getElementById('dashboard-view-mode')?.value || 'columns';
 
         // Render events grouped by graph according to the selected view mode
         UI.renderDashboardActivity(container, graphData, viewMode);

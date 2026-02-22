@@ -699,6 +699,34 @@ h3 {
 }
 
 /* Dashboard Content & Activity Feed */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.dashboard-filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  height: 38px;
+}
+
 .dashboard-content {
   display: flex;
   flex-direction: column;
@@ -718,7 +746,7 @@ h3 {
 
 .activity-list-header {
   display: grid;
-  grid-template-columns: minmax(200px, 2fr) 130px 100px 140px 140px;
+  grid-template-columns: 180px minmax(200px, 2fr) 130px 100px 140px;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--bg-secondary);
@@ -743,7 +771,7 @@ h3 {
 
 .activity-item {
   display: grid;
-  grid-template-columns: minmax(200px, 2fr) 130px 100px 140px 140px;
+  grid-template-columns: 180px minmax(200px, 2fr) 130px 100px 140px;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   align-items: center;

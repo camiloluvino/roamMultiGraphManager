@@ -317,7 +317,7 @@ const UI = {
      * @param {Array} graphData - Array of objects { graphName, items, error }
      * @param {string} viewMode - 'accordion', 'columns', or 'list'
      */
-    renderDashboardActivity(container, graphData, viewMode = 'accordion') {
+    renderDashboardActivity(container, graphData, viewMode = 'columns') {
         if (!graphData || graphData.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
