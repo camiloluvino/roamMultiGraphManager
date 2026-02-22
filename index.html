@@ -33,7 +33,10 @@
             Dashboard
           </button>
           <button class="nav-btn" data-view="registros">
-            Registros
+            Grafos
+          </button>
+          <button class="nav-btn" data-view="conversaciones">
+            Conversaciones
           </button>
           <button class="nav-btn" data-view="operations">
             Operaciones
@@ -78,10 +81,10 @@
           </div>
         </div>
 
-        <!-- Registros View -->
+        <!-- Registros View (Grafos) -->
         <div id="view-registros" class="main-view">
           <div class="dashboard-header">
-            <h2>Páginas Registradas</h2>
+            <h2>Grafos Registrados (/grafoDeDiscurso)</h2>
             <div class="dashboard-filters">
               <button id="btn-auto-scan-registros" class="btn btn-secondary">🔍 Auto-Escanear
                 "/grafoDeDiscurso"</button>
@@ -116,6 +119,47 @@
 
           <div id="registros-content" class="dashboard-content">
             <!-- List of stored manual registers -->
+          </div>
+        </div>
+
+        <!-- Conversaciones View -->
+        <div id="view-conversaciones" class="main-view">
+          <div class="dashboard-header">
+            <h2>Conversaciones Registradas (/conversacionesChatbots)</h2>
+            <div class="dashboard-filters">
+              <button id="btn-auto-scan-conversaciones" class="btn btn-secondary">🔍 Auto-Escanear
+                "/conversacionesChatbots"</button>
+              <button id="btn-show-add-conversacion" class="btn btn-primary">+ Nueva Conversación</button>
+            </div>
+          </div>
+
+          <!-- Add Conversacion Form (Hidden by default) -->
+          <div id="add-conversacion-container" class="card" style="display: none; margin-bottom: var(--spacing-lg);">
+            <div class="card-header">
+              <h3>Agregar Registro Manual</h3>
+              <button id="btn-cancel-conversacion" class="btn btn-ghost" title="Cancelar">✕</button>
+            </div>
+            <form id="form-add-conversacion" class="operation-form" style="margin-top: var(--spacing-md);">
+              <div class="form-group">
+                <label for="conversacion-graph">Grafo *</label>
+                <select id="conversacion-graph" class="form-control" required>
+                  <option value="">Selecciona un grafo</option>
+                  <!-- Filled by JS -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="conversacion-title">Título de la Página *</label>
+                <input type="text" id="conversacion-title" placeholder="Ej: área/participación/conversacionesChatbots"
+                  required>
+              </div>
+              <div class="btn-group" style="margin-top: var(--spacing-md);">
+                <button type="submit" class="btn btn-success">Guardar Registro</button>
+              </div>
+            </form>
+          </div>
+
+          <div id="conversaciones-content" class="dashboard-content">
+            <!-- List of stored manual registers for conversaciones -->
           </div>
         </div>
 

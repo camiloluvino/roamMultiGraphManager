@@ -8,7 +8,8 @@ const Storage = {
         GRAPHS: 'roam_mg_graphs',
         LOGS: 'roam_mg_logs',
         SELECTED_GRAPHS: 'roam_mg_selected',
-        REGISTROS: 'roam_mg_registros'
+        REGISTROS: 'roam_mg_registros',
+        CONVERSACIONES: 'roam_mg_conversaciones'
     },
 
     MAX_LOGS: 100,
@@ -218,6 +219,54 @@ const Storage = {
             localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
         } catch (e) {
             console.error('Error saving registros after delete', e);
+        }
+    },
+
+    /**
+     * Get manual conversaciones
+     * @returns {Array} Array of conversational register objects
+     */
+    getConversaciones() {
+        try {
+            const data = localStorage.getItem(this.KEYS.CONVERSACIONES);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Error reading conversaciones from storage', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save a new manual conversacion
+     * @param {Object} data - { graph, title }
+     */
+    saveConversacion(data) {
+        const conversaciones = this.getConversaciones();
+        const newReg = {
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+            graph: data.graph,
+            title: data.title,
+            addedAt: new Date().toISOString()
+        };
+        conversaciones.push(newReg);
+        try {
+            localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
+        } catch (e) {
+            console.error('Error saving conversaciones to storage', e);
+        }
+    },
+
+    /**
+     * Delete a manual conversacion
+     * @param {string} id - Conversacion ID
+     */
+    deleteConversacion(id) {
+        let conversaciones = this.getConversaciones();
+        conversaciones = conversaciones.filter(r => r.id !== id);
+        try {
+            localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
+        } catch (e) {
+            console.error('Error saving conversaciones after delete', e);
         }
     }
 };

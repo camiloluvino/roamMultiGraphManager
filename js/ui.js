@@ -577,7 +577,7 @@ const UI = {
     /**
      * Render Registros list
      */
-    renderRegistros(container, registros, loadingTimes = false, sortState = null) {
+    renderRegistros(container, registros, loadingTimes = false, sortState = null, type = 'registro') {
         if (!registros || registros.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -636,7 +636,7 @@ const UI = {
                         ${timeHtml}
                     </div>
                     <div style="text-align: right; padding-right: 16px;">
-                        <button class="btn btn-ghost btn-delete-registro" data-id="${reg.id}" style="color: var(--error-color);" title="Eliminar registro">🗑️</button>
+                        <button class="btn btn-ghost btn-delete-${type}" data-id="${reg.id}" style="color: var(--error-color);" title="Eliminar registro">🗑️</button>
                     </div>
                 </div>
             `;

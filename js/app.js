@@ -5,11 +5,13 @@ const App = {
 
     // Sort states
     dashboardSort: { column: 'time', direction: 'desc' },
-    registrosSort: { column: 'addedAt', direction: 'desc' },
+    registrosSort: { column: 'status', direction: 'desc' },
+    conversacionesSort: { column: 'status', direction: 'desc' },
 
     // Data caches for sorting without API calls
     lastDashboardData: null,
     lastRegistrosData: null,
+    lastConversacionesData: null,
 
     /**
      * Initialize the application
@@ -46,7 +48,20 @@ const App = {
         }
         if (this.lastRegistrosData) {
             const container = document.getElementById('registros-content');
-            UI.renderRegistros(container, this.lastRegistrosData, false, this.registrosSort);
+            UI.renderRegistros(container, this.lastRegistrosData, false, this.registrosSort, 'registro');
+        }
+    },
+
+    sortConversaciones(column) {
+        if (this.conversacionesSort.column === column) {
+            this.conversacionesSort.direction = this.conversacionesSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.conversacionesSort.column = column;
+            this.conversacionesSort.direction = 'asc';
+        }
+        if (this.lastConversacionesData) {
+            const container = document.getElementById('conversaciones-content');
+            UI.renderRegistros(container, this.lastConversacionesData, false, this.conversacionesSort, 'conversacion');
         }
     },
 
@@ -119,6 +134,13 @@ const App = {
             if (registrosHeader) {
                 const column = registrosHeader.dataset.column;
                 this.sortRegistros(column);
+                return;
+            }
+
+            const conversacionesHeader = e.target.closest('#conversaciones-content .sortable-header');
+            if (conversacionesHeader) {
+                const column = conversacionesHeader.dataset.column;
+                this.sortConversaciones(column);
                 return;
             }
         });
@@ -281,6 +303,33 @@ const App = {
                 this.deleteRegistro(deleteBtn.dataset.id);
             }
         });
+
+        // Conversaciones interactions
+        document.getElementById('btn-show-add-conversacion')?.addEventListener('click', () => {
+            document.getElementById('add-conversacion-container').style.display = 'block';
+        });
+
+        document.getElementById('btn-cancel-conversacion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('add-conversacion-container').style.display = 'none';
+            document.getElementById('form-add-conversacion').reset();
+        });
+
+        document.getElementById('btn-auto-scan-conversaciones')?.addEventListener('click', () => {
+            this.autoScanConversaciones();
+        });
+
+        document.getElementById('form-add-conversacion')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addConversacion();
+        });
+
+        document.getElementById('conversaciones-content')?.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.btn-delete-conversacion');
+            if (deleteBtn) {
+                this.deleteConversacion(deleteBtn.dataset.id);
+            }
+        });
     },
 
     /**
@@ -323,6 +372,8 @@ const App = {
             this.refreshDashboard();
         } else if (viewName === 'registros') {
             this.refreshRegistros();
+        } else if (viewName === 'conversaciones') {
+            this.refreshConversaciones();
         }
     },
 
@@ -424,12 +475,15 @@ const App = {
         const graphs = Storage.getGraphs();
         this.renderGraphLists(graphs);
 
-        // Update registros select
-        const select = document.getElementById('registro-graph');
-        if (select) {
-            select.innerHTML = '<option value="">Selecciona un grafo</option>' +
-                Object.keys(graphs).map(name => `<option value="${name}">${name}</option>`).join('');
-        }
+        // Update registros/conversaciones select
+        const optionsHtml = '<option value="">Selecciona un grafo</option>' +
+            Object.keys(graphs).map(name => `<option value="${name}">${name}</option>`).join('');
+
+        const selectReg = document.getElementById('registro-graph');
+        if (selectReg) selectReg.innerHTML = optionsHtml;
+
+        const selectConv = document.getElementById('conversacion-graph');
+        if (selectConv) selectConv.innerHTML = optionsHtml;
     },
 
     /**
@@ -799,7 +853,7 @@ const App = {
 
         this.lastRegistrosData = registros;
         // Render in "loading times" state
-        UI.renderRegistros(container, registros, true, this.registrosSort);
+        UI.renderRegistros(container, registros, true, this.registrosSort, 'registro');
 
         if (registros.length === 0) return;
 
@@ -819,7 +873,7 @@ const App = {
 
         const updatedRegistros = await Promise.all(timePromises);
         this.lastRegistrosData = updatedRegistros;
-        UI.renderRegistros(container, updatedRegistros, false, this.registrosSort);
+        UI.renderRegistros(container, updatedRegistros, false, this.registrosSort, 'registro');
     },
 
     /**
@@ -915,6 +969,132 @@ const App = {
             Storage.deleteRegistro(id);
             UI.toast('Registro eliminado', 'info');
             this.refreshRegistros();
+        }
+    },
+
+    /**
+     * Refresh view of manual conversaciones
+     */
+    async refreshConversaciones() {
+        const container = document.getElementById('conversaciones-content');
+        if (!container) return;
+        const conversaciones = Storage.getConversaciones();
+
+        this.lastConversacionesData = conversaciones;
+        // Render in "loading times" state
+        UI.renderRegistros(container, conversaciones, true, this.conversacionesSort, 'conversacion');
+
+        if (conversaciones.length === 0) return;
+
+        // Fetch last edit times
+        const timePromises = conversaciones.map(async (reg) => {
+            const config = Storage.getGraph(reg.graph);
+            if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
+            try {
+                const graph = RoamAPI.initGraph(reg.graph, config.token);
+                const time = await RoamAPI.getPageEditTime(graph, reg.title);
+                return { ...reg, lastEdited: time, error: null };
+            } catch (e) {
+                return { ...reg, lastEdited: null, error: 'Error API' };
+            }
+        });
+
+        const updatedConversaciones = await Promise.all(timePromises);
+        this.lastConversacionesData = updatedConversaciones;
+        UI.renderRegistros(container, updatedConversaciones, false, this.conversacionesSort, 'conversacion');
+    },
+
+    /**
+     * Add new manual conversacion
+     */
+    addConversacion() {
+        const graph = document.getElementById('conversacion-graph').value;
+        const title = document.getElementById('conversacion-title').value.trim();
+
+        if (!graph || !title) {
+            UI.toast('Por favor completa todos los campos', 'error');
+            return;
+        }
+
+        Storage.saveConversacion({ graph, title });
+
+        document.getElementById('add-conversacion-container').style.display = 'none';
+        document.getElementById('form-add-conversacion').reset();
+
+        Storage.addLog('success', `Conversación añadida: ${title}`);
+        UI.toast('Conversación registrada con éxito', 'success');
+
+        this.refreshConversaciones();
+        this.renderLogs();
+    },
+
+    /**
+     * Auto scan configured active graphs for /conversacionesChatbots
+     */
+    async autoScanConversaciones() {
+        if (this.selectedGraphs.size === 0) {
+            UI.toast('Selecciona al menos un grafo activo', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-auto-scan-conversaciones');
+        if (btn) UI.setButtonLoading(btn, true);
+
+        let addedCount = 0;
+        const currentConversaciones = Storage.getConversaciones();
+        const existingSet = new Set(currentConversaciones.map(r => `${r.graph}::${r.title}`));
+
+        for (const graphName of this.selectedGraphs) {
+            const config = Storage.getGraph(graphName);
+            if (!config) continue;
+
+            try {
+                const graph = RoamAPI.initGraph(graphName, config.token);
+                const pages = await RoamAPI.getPagesBySuffix(graph, '/conversacionesChatbots');
+
+                for (const title of pages) {
+                    const key = `${graphName}::${title}`;
+                    if (!existingSet.has(key)) {
+                        Storage.saveConversacion({ graph: graphName, title });
+                        existingSet.add(key);
+                        addedCount++;
+                    }
+                }
+            } catch (error) {
+                console.error(`Error escaneando ${graphName}:`, error);
+                Storage.addLog('error', `Error escaneando ${graphName}: ${error.message}`);
+                UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
+            }
+        }
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '🔍 Auto-Escanear "/conversacionesChatbots"';
+        }
+
+        if (addedCount > 0) {
+            UI.toast(`Se agregaron ${addedCount} nuevas conversaciones automáticamente`, 'success');
+            Storage.addLog('success', `Auto-escaneo: ${addedCount} conversaciones agregadas`);
+            this.refreshConversaciones();
+            this.renderLogs();
+        } else {
+            UI.toast('No se encontraron nuevas conversaciones', 'info');
+        }
+    },
+
+    /**
+     * Delete manual conversacion
+     */
+    async deleteConversacion(id) {
+        const confirmed = await UI.confirm(
+            'Eliminar conversación',
+            '¿Seguro que quieres eliminar este marcador? La página no se borrará de Roam.'
+        );
+
+        if (confirmed) {
+            Storage.deleteConversacion(id);
+            UI.toast('Conversación eliminada', 'info');
+            this.refreshConversaciones();
         }
     }
 };
