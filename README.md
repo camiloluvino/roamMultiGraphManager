@@ -4,13 +4,13 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 
 ## 🚀 Características
 
-- **Diseño Minimalista "Claude-like":** Una interfaz limpia, sin bordes innecesarios, que utiliza tipografía elegante (**Lora Serif**) y espacios en blanco para una experiencia de usuario premium y enfocada.
+- **Diseño Full-Width Minimalista:** Una interfaz limpia y profesional que utiliza todo el ancho de la pantalla para máxima visibilidad. Sin barras laterales distractoras.
 - **Dashboard Dinámico:** Selector de vista para alternar entre **Acordeones** (jerárquico Grafo → Página → Bloques) y **Columnas** (tabla plana tipo Excel).
 - **Registros (Marcadores Inteligentes):** Nueva pestaña dedicada a trackear páginas específicas de interés. Muestra automáticamente la **última fecha de modificación** y permite el **Auto-Escaneo** masivo de páginas basadas en patrones de nombre.
+- **Historial Dedicado:** Nueva pestaña que centraliza todos los logs de operaciones en una vista de pantalla completa.
 - **Filtros Avanzados:** Filtra por tiempo (Hoy/Ayer/Semana), tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque).
-- **Gestión Segura de Grafos:** Nueva pestaña de configuración con diseño de dos columnas para gestionar tokens y activar grafos.
+- **Gestión de Grafos Mejorada:** Los grafos se gestionan y activan íntegramente desde la pestaña de Configuración, eliminando la necesidad de una barra lateral.
 - **Persistencia de Selección:** Recuerda tus grafos activos automáticamente entre sesiones.
-- **Sidebar Dinámico:** Muestra únicamente los grafos activados para reducir ruido visual durante las operaciones.
 - **Crear páginas** en múltiples grafos con un solo clic.
 - **Modificar títulos** de páginas existentes.
 - **Eliminar páginas** con confirmación de seguridad.
@@ -39,10 +39,10 @@ Para cada grafo que quieras gestionar:
 ### 2. Configurar y Activar Grafos
 
 1. Abre `index.html` en tu navegador.
-2. Ve a la nueva pestaña **⚙️ Configuración**.
+2. Ve a la pestaña **⚙️ Configuración**.
 3. En el panel izquierdo, ingresa el nombre del grafo y su API Token, luego click en **Agregar Grafo**.
-4. En el panel derecho (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
-5. Los grafos seleccionados aparecerán automáticamente en la barra lateral izquierda bajo **📂 Grafos (Activos)**.
+4. En el panel central (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
+5. Los grafos seleccionados aparecerán en el panel derecho (**Grafos Activos**) para confirmar tu selección antes de operar.
 
 ### 3. Registrar Páginas de Interés (Manual o Auto)
 1. Ve a la pestaña **Registros**.

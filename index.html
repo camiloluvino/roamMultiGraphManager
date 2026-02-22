@@ -25,36 +25,6 @@
 
     <!-- Main Grid -->
     <div class="main-grid">
-      <!-- Sidebar -->
-      <aside>
-        <div class="card">
-          <div class="card-header">
-            <h2>Grafos</h2>
-          </div>
-
-          <!-- Active Graph List -->
-          <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-              <span style="font-size: 0.875rem; color: var(--text-secondary);">Grafos activos</span>
-            </div>
-            <div id="active-graph-list" class="graph-list">
-              <!-- Active graphs rendered here -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Logs Panel -->
-        <div class="card logs-panel" style="margin-top: var(--spacing-lg);">
-          <div class="card-header">
-            <h2>Historial</h2>
-            <button id="btn-clear-logs" class="btn btn-ghost" title="Limpiar logs">Limpiar</button>
-          </div>
-          <div id="logs-list" class="log-list">
-            <!-- Logs rendered here -->
-          </div>
-        </div>
-      </aside>
-
       <!-- Main Content -->
       <main>
         <!-- Top Level Navigation Toggle -->
@@ -70,6 +40,9 @@
           </button>
           <button class="nav-btn" data-view="config">
             Configuración
+          </button>
+          <button class="nav-btn" data-view="logs">
+            Historial
           </button>
         </div>
 
@@ -267,6 +240,32 @@
               <div id="all-graph-list" class="graph-list">
                 <!-- All graphs rendered here -->
               </div>
+            </div>
+
+            <!-- Active Graphs -->
+            <div class="card">
+              <div class="card-header">
+                <h2>Grafos Activos</h2>
+              </div>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                Grafos actualmente seleccionados para aplicar operaciones.
+              </p>
+              <div id="active-graph-list" class="graph-list">
+                <!-- Active graphs rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logs View -->
+        <div id="view-logs" class="main-view">
+          <div class="card logs-panel" style="margin-top: 0; min-height: 60vh;">
+            <div class="card-header">
+              <h2>Historial del Sistema</h2>
+              <button id="btn-clear-logs" class="btn btn-ghost" title="Limpiar logs">Limpiar Historial</button>
+            </div>
+            <div id="logs-list" class="log-list" style="max-height: 600px; font-size: 0.9rem;">
+              <!-- Logs rendered here -->
             </div>
           </div>
         </div>

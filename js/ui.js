@@ -127,7 +127,6 @@ const UI = {
             return `
       <div class="graph-item selected" data-graph="${escapedName}">
         <span class="graph-name">${escapedName}</span>
-        <span class="graph-status ${config.status === 'error' ? 'error' : ''}">${this.getStatusText(config.status)}</span>
         <button class="btn btn-ghost btn-deselect" title="Quitar de selección" style="opacity: 0.6; font-size: 0.8em;">✕</button>
       </div>
     `}).join('');
@@ -159,7 +158,6 @@ const UI = {
       <div class="graph-item ${selectedGraphs.has(name) ? 'selected' : ''}" data-graph="${escapedName}">
         <input type="checkbox" class="checkbox" ${selectedGraphs.has(name) ? 'checked' : ''}>
         <span class="graph-name">${escapedName}</span>
-        <span class="graph-status ${config.status === 'error' ? 'error' : ''}">${this.getStatusText(config.status)}</span>
         <button class="btn btn-ghost btn-remove" title="Eliminar configuración del grafo" style="opacity: 0.6;">🗑️</button>
       </div>
     `}).join('');
@@ -578,12 +576,12 @@ const UI = {
             }
 
             return `
-                <div class="activity-item" style="grid-template-columns: 180px minmax(200px, 2fr) 200px 100px 140px;">
+                <div class="activity-item" style="grid-template-columns: 180px minmax(300px, 1fr) 250px 100px;">
                     <div>
                         <span class="badge" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color);">${this.escapeHTML(reg.graph)}</span>
                     </div>
                     <div class="cell-content">
-                        <a href="${roamUrl}" target="_blank" class="title-text" style="color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 1.05rem;">
+                        <a href="${roamUrl}" target="_blank" class="title-text" style="color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 1.05rem; word-break: break-word;" title="${this.escapeHTML(reg.title)}">
                             ${this.escapeHTML(reg.title)} <span style="font-size: 0.8em; opacity: 0.5;">↗</span>
                         </a>
                         <span class="snippet-text">Agregado: ${dateStr}</span>
@@ -591,8 +589,7 @@ const UI = {
                     <div>
                         ${timeHtml}
                     </div>
-                    <div></div>
-                    <div>
+                    <div style="text-align: right; padding-right: 16px;">
                         <button class="btn btn-ghost btn-delete-registro" data-id="${reg.id}" style="color: var(--error-color);" title="Eliminar registro">🗑️</button>
                     </div>
                 </div>
@@ -601,12 +598,11 @@ const UI = {
 
         container.innerHTML = `
             <div class="activity-table" style="overflow-x: auto;">
-                <div class="activity-list-header" style="grid-template-columns: 180px minmax(200px, 2fr) 200px 100px 140px;">
+                <div class="activity-list-header" style="grid-template-columns: 180px minmax(300px, 1fr) 250px 100px;">
                     <div>Grafo</div>
                     <div>Página</div>
                     <div>Estado</div>
-                    <div></div>
-                    <div>Acción</div>
+                    <div style="text-align: right; padding-right: 16px;">Acción</div>
                 </div>
                 <div class="activity-table-body">
                     ${listHTML}

@@ -2,10 +2,12 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.9** (Marcadores con Auto-Escaneo de Grafos de Discurso)
+**v0.2.0** (Rediseño Full-Width: Sin Sidebar y Navegación Centralizada)
 
 ## 2. Estado de Funcionalidades
-- 🟢 **UI General:** Rediseño total minimalista. Sistema de rejilla del Dashboard optimizado para legibilidad.
+- 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
+- 🟢 **Historial:** Movido de la barra lateral a una pestaña dedicada en el menú principal.
+- 🟢 **Gestión de Grafos:** Sidebar eliminada; "Grafos Activos" reubicados en la pestaña de Configuración.
 - 🟢 **Tipografía:** Implementación de sistema dual: Lora (Serif) e Inter (Sans).
 - 🟢 **Dashboard Avanzado:** Vista de Columnas establecida como predeterminada. Alineación de textos mejorada.
 - 🟢 **Registros Avanzados:** Marcadores con soporte para **Auto-Escaneo** selectivo basado en sufijos (`/grafoDeDiscurso`).
@@ -14,6 +16,7 @@
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
 
 ## 3. Historial Reciente
+- **REDISEÑO FULL-WIDTH Y NAVEGACIÓN (v0.2.0):** Se eliminó la columna lateral (sidebar) para liberar espacio y ampliar el contenido de las pestañas principales. Los componentes que residían en la sidebar fueron reubicados estratégicamente: el **Historial** ahora tiene su propia pestaña de navegación principal, y la lista de **Grafos Activos** se integró en la pestaña de Configuración. Se ajustó el sistema de rejilla CSS para soportar el layout de ancho completo y se optimizó la vista de configuración para manejar tres paneles laterales.
 - **AUTO-ESCANEO DE REGISTROS (v0.1.9):** Se implementó un motor de descubrimiento automático de páginas dentro de la pestaña de Registros. Mediante el nuevo botón "Auto-Escanear", la aplicación ejecuta una consulta Datalog masiva en todos los grafos activos para identificar páginas que cumplan con la convención de nomenclatura `/grafoDeDiscurso`. Los resultados se filtran contra los registros existentes en `localStorage` para evitar duplicados y se añaden automáticamente al panel de monitoreo. Se añadió el método `getPagesBySuffix` en `api.js` y la lógica de integración en `app.js`.
 - **PESTAÑA DE REGISTROS CON MONITOREO (v0.1.8):** Se integró una nueva sección de "Registros" que funciona como un sistema de marcadores inteligentes para páginas específicas. El usuario puede guardar manualmente títulos de páginas y asignarlos a un grafo... (omitido para brevedad)
 - **OPTIMIZACIÓN DE GRID Y VISTA PREDETERMINADA:** Se estableció la **Vista de Columnas** como el modo de visualización inicial del Dashboard para ofrecer una visión general rápida al cargar la app. Se rediseñó el sistema de rejilla CSS de la tabla para priorizar la columna "Elemento afectado", dándole mayor ancho flexible (`minmax(200px, 2fr)`) y fijando el ancho de la columna "Grafo" a `180px`. Además, se eliminaron estilos CSS en línea del header del Dashboard, delegando la maquetación de los filtros a clases CSS dedicadas (`.dashboard-header` y `.dashboard-filters`) para asegurar un comportamiento responsivo correcto.
