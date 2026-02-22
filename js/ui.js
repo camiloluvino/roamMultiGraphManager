@@ -232,7 +232,7 @@ const UI = {
         <strong>Grafos destino:</strong>
         ${targetGraphs.map(g => `<span class="preview-item"><span class="graph-name">${this.escapeHTML(g)}</span></span>`).join('')}
       </div>
-    `;
+    `.trim();
     },
 
     /**

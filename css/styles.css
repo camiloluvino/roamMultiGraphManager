@@ -404,16 +404,37 @@ h3 {
   color: var(--text-secondary);
 }
 
-.preview-item {
+.preview-panel p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.preview-graphs {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: var(--spacing-sm);
-  padding: var(--spacing-xs) 0;
+  align-items: flex-start;
+  margin-top: var(--spacing-sm);
+}
+
+.preview-graphs strong {
+  flex-basis: 100%;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+}
+
+.preview-item {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
   font-size: 0.875rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 .preview-item .graph-name {
   color: var(--accent-purple);
+  font-weight: 500;
 }
 
 .preview-item .action {
@@ -995,4 +1016,91 @@ h3 {
 .block-action-icon {
   font-size: 1rem;
   padding-top: 1px;
+}
+
+/* ============================================
+   Operations View - Layout
+   ============================================ */
+
+.operations-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+.graphs-selector {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  height: fit-content;
+  position: sticky;
+  top: var(--spacing-md);
+}
+
+.graphs-selector h3 {
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.graphs-list {
+  margin-bottom: var(--spacing-md);
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+}
+
+.graphs-list label {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin: 2px 0;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+  user-select: none;
+}
+
+.graphs-list label:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.graphs-list input[type="checkbox"] {
+  margin-right: var(--spacing-sm);
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.graphs-list .graph-label-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.graphs-selector .hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: var(--spacing-sm);
+}
+
+.operations-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Responsive: Mobile stacking */
+@media (max-width: 1024px) {
+  .operations-container {
+    grid-template-columns: 1fr;
+  }
+
+  .graphs-selector {
+    position: static;
+  }
 }

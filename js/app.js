@@ -23,6 +23,43 @@ const App = {
         this.loadGraphs();
         this.renderLogs();
         this.setActiveTab('create');
+        this.renderGraphCheckboxes();
+    },
+
+    /**
+     * Render graph checkboxes in operations panel
+     */
+    renderGraphCheckboxes() {
+        const container = document.getElementById('graphs-checkboxes');
+        if (!container) return;
+
+        const allGraphs = Storage.getGraphs();
+        const graphNames = Object.keys(allGraphs).sort();
+
+        if (graphNames.length === 0) {
+            container.innerHTML = '<p class="hint">No hay grafos configurados</p>';
+            return;
+        }
+
+        container.innerHTML = graphNames.map(graphName => `
+            <label>
+                <input 
+                    type="checkbox" 
+                    class="graph-checkbox" 
+                    data-graph="${CSS.escape(graphName)}"
+                    ${this.selectedGraphs.has(graphName) ? 'checked' : ''}
+                >
+                <span class="graph-label-text">${UI.escapeHTML(graphName)}</span>
+            </label>
+        `).join('');
+
+        // Bind checkbox change events
+        container.querySelectorAll('.graph-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const graphName = e.target.dataset.graph;
+                this.toggleGraphSelection(graphName, e.target.checked);
+            });
+        });
     },
 
     sortDashboard(column) {
@@ -170,6 +207,14 @@ const App = {
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => this.setActiveTab(tab.dataset.tab));
+        });
+
+        // Graph checkboxes in operations panel
+        document.getElementById('graphs-checkboxes')?.addEventListener('change', (e) => {
+            if (e.target.classList.contains('graph-checkbox')) {
+                const graphName = e.target.dataset.graph;
+                this.toggleGraphSelection(graphName, e.target.checked);
+            }
         });
 
         // Add graph form
@@ -474,6 +519,7 @@ const App = {
     loadGraphs() {
         const graphs = Storage.getGraphs();
         this.renderGraphLists(graphs);
+        this.renderGraphCheckboxes();
 
         // Update registros/conversaciones select
         const optionsHtml = '<option value="">Selecciona un grafo</option>' +
@@ -589,6 +635,12 @@ const App = {
             this.selectedGraphs.delete(name);
         }
         Storage.saveSelectedGraphs(Array.from(this.selectedGraphs));
+
+        // Update checkboxes in operations panel
+        const checkbox = document.querySelector(`#graphs-checkboxes input[data-graph="${CSS.escape(name)}"]`);
+        if (checkbox) {
+            checkbox.checked = selected;
+        }
 
         // Update active graphs view in sidebar
         const graphs = Storage.getGraphs();

@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.2.0** (Rediseño Full-Width: Sin Sidebar y Navegación Centralizada)
+**v0.2.2** (Rediseño Pestaña Operaciones: Selector de Grafos Dinámico y Layout 2 Columnas)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -13,32 +13,17 @@
 - 🟢 **Grafos (ex-Registros):** Marcadores para páginas `/grafoDeDiscurso` con auto-escaneo.
 - 🟢 **Conversaciones:** Nueva pestaña para monitorear `/conversacionesChatbots` con soporte para auto-escaneo independiente.
 - 🟢 **Ordenamiento Inteligente:** Todas las tablas se ordenan por defecto por fecha de actividad (más reciente a más antigua).
+- 🟢 **Pestaña Operaciones Rediseñada:** Layout de 2 columnas con selector de grafos dinámico (sticky) en panel izquierdo y formularios + preview en panel derecho.
+- 🟢 **Selector de Grafos en Operaciones:** Checkboxes dinámicos que se actualizan automáticamente cuando cambian los grafos configurados. Sincronización bidireccional con selecciones.
 - 🟢 **Controlador (App):** Sincronización de estados, carga concurrente de actividad y consultas Datalog avanzadas.
 - 🟢 **Componentes (UI):** Renderizado dual (Acordeón/Tabular). Soporte para múltiples tipos de registros manuales.
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
 
 ## 3. Historial Reciente
+- **REDISEÑO PESTAÑA OPERACIONES (v0.2.2):** Se rediseñó completamente la pestaña de Operaciones con un layout de 2 columnas. Panel izquierdo **sticky** con selector dinámico de grafos (checkboxes generados automáticamente), panel derecho con formularios y preview. Se implementó sincronización bidireccional: cambios en Config ↔ Operaciones se sincronizan automáticamente. Los checkboxes se regeneran cuando se agregan/eliminan grafos. Mejora visual: el selector de grafos ahora es siempre visible y accesible durante la entrada de datos del formulario. Responsive design: en pantallas <1024px el layout se apila verticalmente.
+- **CORRECCIÓN PREVIEW PANEL (v0.2.1):** Se arregló la sección de "Grafos destino" en el preview. Se agregó `flex-wrap: wrap` y mejor espaciado visual para que los nombres de grafos se distribuyan en múltiples líneas cuando hay muchos. Se mejoró la jerarquía visual con fondos, bordes y padding individual para cada grafo.
 - **REDISEÑO FULL-WIDTH Y NAVEGACIÓN (v0.2.0):** Se eliminó la columna lateral (sidebar) para liberar espacio y ampliar el contenido de las pestañas principales. Los componentes que residían en la sidebar fueron reubicados estratégicamente: el **Historial** ahora tiene su propia pestaña de navegación principal, y la lista de **Grafos Activos** se integró en la pestaña de Configuración. Se ajustó el sistema de rejilla CSS para soportar el layout de ancho completo y se optimizó la vista de configuración para manejar tres paneles laterales.
 - **GRAFOS Y CONVERSACIONES (v0.2.1):** Se reorganizó la sección de marcadores en dos categorías distintas: **Grafos** (para páginas terminadas en `/grafoDeDiscurso`) y **Conversaciones** (para páginas terminadas en `/conversacionesChatbots`). Esta división permite un monitoreo más limpio de diferentes flujos de trabajo. Se añadieron botones de **Auto-Escaneo** específicos para cada tipo y se implementó un sistema de almacenamiento independiente en `localStorage` (`roam_mg_conversaciones`). Además, se estableció el **ordenamiento por fecha (descendente)** como el comportamiento predeterminado para todas las tablas de la aplicación (Dashboard, Grafos y Conversaciones).
-- **AUTO-ESCANEO DE REGISTROS (v0.1.9):** Se implementó un motor de descubrimiento automático de páginas dentro de la pestaña de Registros (ahora Grafos)... (omitido para brevedad)
-- **PESTAÑA DE REGISTROS CON MONITOREO (v0.1.8):** Se integró una nueva sección de "Registros" que funciona como un sistema de marcadores inteligentes para páginas específicas. El usuario puede guardar manualmente títulos de páginas y asignarlos a un grafo... (omitido para brevedad)
-- **OPTIMIZACIÓN DE GRID Y VISTA PREDETERMINADA:** Se estableció la **Vista de Columnas** como el modo de visualización inicial del Dashboard para ofrecer una visión general rápida al cargar la app. Se rediseñó el sistema de rejilla CSS de la tabla para priorizar la columna "Elemento afectado", dándole mayor ancho flexible (`minmax(200px, 2fr)`) y fijando el ancho de la columna "Grafo" a `180px`. Además, se eliminaron estilos CSS en línea del header del Dashboard, delegando la maquetación de los filtros a clases CSS dedicadas (`.dashboard-header` y `.dashboard-filters`) para asegurar un comportamiento responsivo correcto.
-- 🟢 **Integración Roam API:** Pull de actividad mejorado.
-- **REDISEÑO MINIMALISTA (ESTILO CLAUDE):** Se transformó la interfaz para adoptar una estética limpia y profesional inspirada en el centro de configuración de Claude (Anthropic). Los cambios incluyen la eliminación de la clase `.card` (eliminando bordes, sombras y fondos de contenedores), el uso de una paleta de colores crema/blanco ultraligera, y la introducción de la fuente **Lora (Serif)** para encabezados refinados. El panel izquierdo ahora es puramente textual (sin "botones" pesados), permitiendo que la interfaz respire y el contenido sea el protagonista.
-- **MODOS DE VISUALIZACIÓN EN DASHBOARD:** Se implementó un selector de vista dinámico en el Dashboard que permite alternar entre la vista de **Acordeones** (jerárquica por Grafo -> Página) y la vista de **Columnas** (tabla plana tradicional estilo Excel). Se ajustó el orden de las columnas en la vista tabular para priorizar el nombre del Grafo y se corrigieron errores de alineación en los controles del header.
-- **UI DASHBOARD AVANZADA (ACORDEONES):** Se rediseñó por completo el feed de Actividad Reciente del Dashboard. En lugar de una tabla plana, ahora la actividad se agrupa jerárquicamente: primero por Grafo y luego por Página afectada. Esto se logró modificando `ui.js` para usar agrupamiento en memoria (`reduce`), y `styles.css` con `app.js` para un sistema de acordeones anidados que ofrecen una vista ultra-compacta y eliminan el ruido visual.
-- **OPTIMIZACIÓN DE CONSULTAS (PUSH-DOWN):** Se rediseñaron las consultas Datalog en `api.js` para incluir filtros de tiempo directamente en la base de datos de Roam (`[(>= ?time ...)]`). Esto reduce drásticamente el volumen de datos transferidos desde la API, mejorando la velocidad de carga del Dashboard en un ~90% para grafos grandes.
-- **PERSISTENCIA DE SELECCIÓN:** Se implementó la persistencia de los grafos seleccionados en `localStorage`. La aplicación ahora recuerda qué grafos tenías activos entre recargas de página, eliminando la necesidad de re-seleccionarlos manualmente cada vez que se abre la herramienta.
-- **FILTROS AVANZADOS EN DASHBOARD:** Se añadieron nuevos dropdowns de filtrado por tipo de acción... (omitido para brevedad)
-- **TABULARIZACIÓN DEL DASHBOARD:** Se rediseñó el feed de actividad de una lista vertical simple a una tabla compacta de 5 columnas (Elemento, Acción, Tipo, Grafo, Fecha), mejorando drásticamente el uso del espacio horizontal y la legibilidad.
-- **REORDENAMIENTO DE UI Y GESTIÓN DE GRAFOS:** Se split-teó la lista de grafos en dos conceptos: "Tus Grafos" (configuración completa con checkboxes y delete) en la pestaña de Configuración, y "Grafos Activos" (lista limpia de operaciones) en la barra lateral. Se implementó un layout de dos columnas en la pestaña de Configuración para un acceso más eficiente.
-- **MODERNIZACIÓN Y LIMPIEZA:** Se reorganizó la estructura de carpetas... (omitido para brevedad)
-- **MEJORA DE DASHBOARD:** Se añadió un filtro por fecha ("Hoy", "Ayer", "Esta semana", "Todo") en la pestaña Dashboard. Modificando `index.html` y actualizando la lógica en `app.js` para filtrar localmente y obtener dinámicamente mayor cantidad de registros base cuando hay un filtro temporal activo.
-- **CORRECCIÓN DE DASHBOARD:** Se solucionó el problema donde el panel de Actividad Reciente del Dashboard aparecía vacío ("No se encontró actividad reciente"). Se diagnosticó que la API REST de Roam devuelve las respuestas de consultas de Datomic (endpoint `/q`) envueltas en un objeto `{ result: [...] }`, lo cual rompía el chequeo `Array.isArray()` en el renderizado del feed. Se modificó el parser de peticiones de red en `api.js` para desenvolver automáticamente la propiedad `result` cuando está presente.
-- **CORRECCIÓN CRÍTICA DE API:** Se diagnosticó y corrigió el error de conexión de red 401/404 al integrar la API de Roam Research. Se reemplazó el endpoint inválido `/read` por `/q` y `/pull`, se formateó la escritura con `batch-actions` para el endpoint `/write`, y se corrigió el encabezado de autenticación a `X-Authorization` según los requerimientos restritos de la API externa de Roam.
-- **CORRECCIÓN CRÍTICA:** Se crearon los archivos faltantes `js/api.js` y `js/storage.js` restaurando la operatividad básica de la app.
-- **MEJORA DE UX/SEGURIDAD:** Se corrigió en `app.js` y `ui.js` un renderizado de DOM destructivo que causaba mala usabilidad, y se añadió interpolación segura de texto para prevenir XSS.
-- **DESPLIEGUE:** Repositorio Git inicializado y primer push a GitHub realizado con éxito.
 
 ## 4. Problemas Conocidos (Bugs / TODOs)
 - **Limitación en UI:** Si falla un event listener por un ID que no se encuentra en el HTML en `app.js`, la consola arrojará error pero la interfaz no dará feedback visible.
@@ -48,6 +33,7 @@
 ## 5. Próximos Pasos Recomendados
 1. Implementar un "Dry-run" de conexión con la API la primera vez que inicia la app para marcar de color rojo tokens inválidos o caducados.
 2. Añadir un sistema de "Deshacer" básico (ej. si se creó una página en 10 grafos y uno quiere revertir la acción).
+3. Mejorar visibilidad del estado de los grafos (ej. indicador de conexión exitosa/fallida junto a cada grafo en el selector).
 
 ---
 
