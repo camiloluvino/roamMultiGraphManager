@@ -113,7 +113,6 @@ const UI = {
         if (selectedGraphs.size === 0) {
             container.innerHTML = `
         <div class="empty-state">
-          <div class="icon" style="margin-bottom: var(--spacing-xs);">📭</div>
           <p>Ningún grafo seleccionado</p>
           <p class="hint" style="font-size: 0.75rem;">Ve a Configuración para elegir</p>
         </div>
@@ -146,7 +145,6 @@ const UI = {
         if (graphEntries.length === 0) {
             container.innerHTML = `
         <div class="empty-state">
-          <div class="icon">📊</div>
           <p>No hay grafos configurados</p>
           <p class="hint">Agrega un grafo desde el formulario superior</p>
         </div>
@@ -323,7 +321,6 @@ const UI = {
         if (!graphData || graphData.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="icon">📭</div>
                     <p>No se encontraron grafos seleccionados.</p>
                 </div>
             `;
@@ -351,7 +348,7 @@ const UI = {
                 <div class="accordion-item graph-level">
                     <div class="accordion-header">
                         <div class="accordion-header-left">
-                            <span class="accordion-header-title" style="color: var(--error-color);">📝 Grafo: ${this.escapeHTML(graphName)}</span>
+                            <span class="accordion-header-title" style="color: var(--error-color);">Grafo: ${this.escapeHTML(graphName)}</span>
                         </div>
                         <div class="accordion-header-right">
                             <span class="badge badge-error">Error</span>
@@ -360,7 +357,6 @@ const UI = {
                     </div>
                     <div class="accordion-content">
                         <div class="empty-state" style="padding: 1rem;">
-                            <div class="icon" style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚠️</div>
                             <p style="color: var(--error-color); font-size: 0.9em;">No se pudo cargar la información: <br/>${this.escapeHTML(error)}</p>
                         </div>
                     </div>
@@ -373,7 +369,7 @@ const UI = {
                 <div class="accordion-item graph-level">
                     <div class="accordion-header">
                         <div class="accordion-header-left">
-                            <span class="accordion-header-title">📝 Grafo: ${this.escapeHTML(graphName)}</span>
+                            <span class="accordion-header-title">Grafo: ${this.escapeHTML(graphName)}</span>
                         </div>
                         <div class="accordion-header-right">
                             <span class="badge" style="background: var(--bg-hover); color: var(--text-muted);">0 acciones</span>
@@ -382,7 +378,6 @@ const UI = {
                     </div>
                     <div class="accordion-content">
                         <div class="empty-state" style="padding: 1rem;">
-                            <div class="icon" style="font-size: 1.5rem; margin-bottom: 0.5rem;">📭</div>
                             <p style="font-size: 0.9em; color: var(--text-muted);">No hay actividad reciente que coincida con los filtros.</p>
                         </div>
                     </div>
@@ -407,7 +402,7 @@ const UI = {
                     const timeStr = new Date(item.time).toLocaleTimeString('es', {
                         hour: '2-digit', minute: '2-digit'
                     });
-                    const icon = isCreate ? '✨' : '✏️';
+                    const icon = isCreate ? '+' : '~';
                     const content = isCreate ? 'Página creada' : (item.content || 'Bloque modificado');
 
                     return `
@@ -423,7 +418,7 @@ const UI = {
                     <div class="accordion-item page-level">
                         <div class="accordion-header">
                             <div class="accordion-header-left">
-                                <span class="accordion-header-title">📄 ${this.escapeHTML(pageTitle)}</span>
+                                <span class="accordion-header-title">${this.escapeHTML(pageTitle)}</span>
                             </div>
                             <div class="accordion-header-right">
                                 <span class="badge badge-pending">${pageItems.length} acc${pageItems.length !== 1 ? 'iones' : 'ión'}</span>
@@ -441,7 +436,7 @@ const UI = {
                 <div class="accordion-item graph-level">
                     <div class="accordion-header">
                         <div class="accordion-header-left">
-                            <span class="accordion-header-title">📝 Grafo: ${this.escapeHTML(graphName)}</span>
+                            <span class="accordion-header-title">Grafo: ${this.escapeHTML(graphName)}</span>
                         </div>
                         <div class="accordion-header-right">
                             <span class="badge badge-success">${items.length} acc${items.length !== 1 ? 'iones' : 'ión'}</span>
@@ -476,7 +471,6 @@ const UI = {
         if (allItems.length === 0) {
             return `
                 <div class="empty-state">
-                    <div class="icon">📭</div>
                     <p>No se encontró actividad reciente en los grafos seleccionados.</p>
                 </div>
             `;
@@ -490,7 +484,7 @@ const UI = {
                     <div class="activity-item" style="border-left: 3px solid var(--error-color);">
                         <div><span class="badge" style="background: var(--bg-tertiary);">${this.escapeHTML(item.graph)}</span></div>
                         <div class="cell-content">
-                            <span class="title-text" style="color: var(--error-color);">⚠️ Error en ${this.escapeHTML(item.graph)}</span>
+                            <span class="title-text" style="color: var(--error-color);">Error en ${this.escapeHTML(item.graph)}</span>
                             <span class="snippet-text">${this.escapeHTML(item.content)}</span>
                         </div>
                         <div><span class="badge badge-error">Error</span></div>
@@ -503,7 +497,7 @@ const UI = {
             const isCreate = item.type === 'create';
 
             const actionText = isCreate ? 'Creación' : 'Modificación';
-            const actionIcon = isCreate ? '✨' : '✏️';
+            const actionIcon = isCreate ? '+' : '~';
 
             const elementText = isCreate ? 'Página' : 'Bloque';
             const elementIcon = isCreate ? '📄' : '🧱';
@@ -520,7 +514,7 @@ const UI = {
                     </div>
                     <div class="cell-content">
                         <span class="title-text" title="${this.escapeHTML(title || 'Sin Título')}">
-                            ${elementIcon} ${this.escapeHTML(title || 'Sin Título')}
+                            ${this.escapeHTML(title || 'Sin Título')}
                         </span>
                     </div>
                     <div>

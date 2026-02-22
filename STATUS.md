@@ -2,10 +2,11 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.5** (Modos de Visualización del Dashboard)
+**v0.1.6** (Rediseño Minimalista estilo Claude)
 
 ## 2. Estado de Funcionalidades
-- 🟢 **UI General:** Reestructurada. Implementado layout de dos columnas en configuración y vista tabular en dashboard.
+- 🟢 **UI General:** Rediseño total minimalista inspirado en la estética de Claude (Anthropic). Eliminación de contenedores rígidos, bordes y sombras.
+- 🟢 **Tipografía:** Implementación de sistema dual: Lora (Serif) para encabezados y Inter (Sans) para cuerpo.
 - 🟢 **Dashboard Avanzado:** Implementado sistema de filtros por Acción (Creación/Modificación) y Tipo (Página/Bloque).
 - 🟢 **Controlador (App):** Sincronización de estados entre múltiples vistas de grafos (Activos vs. Todos).
 - 🟢 **Componentes (UI):** Renderizado dual (Acordeón/Tabular) en Dashboard con selector de vista.
@@ -13,6 +14,7 @@
 - 🟢 **Integración Roam API:** Pull de actividad mejorado.
 
 ## 3. Historial Reciente
+- **REDISEÑO MINIMALISTA (ESTILO CLAUDE):** Se transformó la interfaz para adoptar una estética limpia y profesional inspirada en el centro de configuración de Claude (Anthropic). Los cambios incluyen la eliminación de la clase `.card` (eliminando bordes, sombras y fondos de contenedores), el uso de una paleta de colores crema/blanco ultraligera, y la introducción de la fuente **Lora (Serif)** para encabezados refinados. El panel izquierdo ahora es puramente textual (sin "botones" pesados), permitiendo que la interfaz respire y el contenido sea el protagonista.
 - **MODOS DE VISUALIZACIÓN EN DASHBOARD:** Se implementó un selector de vista dinámico en el Dashboard que permite alternar entre la vista de **Acordeones** (jerárquica por Grafo -> Página) y la vista de **Columnas** (tabla plana tradicional estilo Excel). Se ajustó el orden de las columnas en la vista tabular para priorizar el nombre del Grafo y se corrigieron errores de alineación en los controles del header.
 - **UI DASHBOARD AVANZADA (ACORDEONES):** Se rediseñó por completo el feed de Actividad Reciente del Dashboard. En lugar de una tabla plana, ahora la actividad se agrupa jerárquicamente: primero por Grafo y luego por Página afectada. Esto se logró modificando `ui.js` para usar agrupamiento en memoria (`reduce`), y `styles.css` con `app.js` para un sistema de acordeones anidados que ofrecen una vista ultra-compacta y eliminan el ruido visual.
 - **OPTIMIZACIÓN DE CONSULTAS (PUSH-DOWN):** Se rediseñaron las consultas Datalog en `api.js` para incluir filtros de tiempo directamente en la base de datos de Roam (`[(>= ?time ...)]`). Esto reduce drásticamente el volumen de datos transferidos desde la API, mejorando la velocidad de carga del Dashboard en un ~90% para grafos grandes.

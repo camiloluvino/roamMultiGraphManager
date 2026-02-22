@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -18,7 +18,7 @@
     <!-- Header -->
     <header class="app-header">
       <div>
-        <h1>📊 Roam Multi-Graph Manager</h1>
+        <h1>Roam Multi-Graph Manager</h1>
         <p class="subtitle">Gestiona páginas en múltiples grafos simultáneamente</p>
       </div>
     </header>
@@ -29,7 +29,7 @@
       <aside>
         <div class="card">
           <div class="card-header">
-            <h2><span class="icon">📂</span> Grafos</h2>
+            <h2>Grafos</h2>
           </div>
 
           <!-- Active Graph List -->
@@ -46,8 +46,8 @@
         <!-- Logs Panel -->
         <div class="card logs-panel" style="margin-top: var(--spacing-lg);">
           <div class="card-header">
-            <h2><span class="icon">📜</span> Historial</h2>
-            <button id="btn-clear-logs" class="btn btn-ghost" title="Limpiar logs">🗑️</button>
+            <h2>Historial</h2>
+            <button id="btn-clear-logs" class="btn btn-ghost" title="Limpiar logs">Limpiar</button>
           </div>
           <div id="logs-list" class="log-list">
             <!-- Logs rendered here -->
@@ -60,13 +60,13 @@
         <!-- Top Level Navigation Toggle -->
         <div class="top-nav-toggle">
           <button class="nav-btn active" data-view="dashboard">
-            <span class="icon">👁️</span> Dashboard
+            Dashboard
           </button>
           <button class="nav-btn" data-view="operations">
-            <span class="icon">⚡</span> Operaciones
+            Operaciones
           </button>
           <button class="nav-btn" data-view="config">
-            <span class="icon">⚙️</span> Configuración
+            Configuración
           </button>
         </div>
 
@@ -106,7 +106,7 @@
 
           <div id="dashboard-content" class="dashboard-content">
             <div class="empty-state">
-              <div class="icon">📊</div>
+              <div class="icon" style="font-size: 2rem;"></div>
               <p>Selecciona grafos en el panel izquierdo para ver su actividad reciente.</p>
             </div>
           </div>
@@ -117,9 +117,9 @@
           <div class="card">
             <!-- Tabs -->
             <div class="tabs">
-              <button class="tab active" data-tab="create">➕ Crear</button>
-              <button class="tab" data-tab="update">✏️ Modificar</button>
-              <button class="tab" data-tab="delete">🗑️ Eliminar</button>
+              <button class="tab active" data-tab="create">Crear</button>
+              <button class="tab" data-tab="update">Modificar</button>
+              <button class="tab" data-tab="delete">Eliminar</button>
             </div>
 
             <!-- Create Tab -->
@@ -136,7 +136,7 @@
                   <p class="hint">Una línea por bloque. Se crearán como bloques hijos de la página.</p>
                 </div>
                 <div class="btn-group">
-                  <button type="submit" class="btn btn-success">✓ Crear Página</button>
+                  <button type="submit" class="btn btn-success">Crear Página</button>
                 </div>
               </form>
             </div>
@@ -153,7 +153,7 @@
                   <input type="text" id="update-title" placeholder="Nuevo título para la página" required>
                 </div>
                 <div class="btn-group">
-                  <button type="submit" class="btn btn-primary">✏️ Modificar Página</button>
+                  <button type="submit" class="btn btn-primary">Modificar Página</button>
                 </div>
               </form>
             </div>
@@ -167,14 +167,14 @@
                   <p class="hint">⚠️ Esta acción no se puede deshacer</p>
                 </div>
                 <div class="btn-group">
-                  <button type="submit" class="btn btn-danger">🗑️ Eliminar Página</button>
+                  <button type="submit" class="btn btn-danger">Eliminar Página</button>
                 </div>
               </form>
             </div>
 
             <!-- Preview Panel -->
             <div id="preview-panel" class="preview-panel">
-              <h3>📋 Preview</h3>
+              <h3>Preview</h3>
               <p class="hint">Selecciona grafos y completa el formulario para ver el preview</p>
             </div>
             <!-- End Operations View -->
@@ -187,7 +187,7 @@
             <!-- Add Graph Card -->
             <div class="card">
               <div class="card-header">
-                <h2><span class="icon">⚙️</span> Configuración de Grafos</h2>
+                <h2>Configuración de Grafos</h2>
               </div>
               <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
                 Agrega los tokens de la API de Rest de tus diferentes grafos de Roam para poder interactuar con ellos
@@ -206,7 +206,7 @@
                   <p class="hint">Obtén el token en Settings → Graph → API Tokens</p>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
-                  ➕ Agregar Grafo
+                  Agregar Grafo
                 </button>
               </form>
             </div>
@@ -214,7 +214,7 @@
             <!-- All Graphs List -->
             <div class="card">
               <div class="card-header">
-                <h2><span class="icon">📋</span> Tus Grafos</h2>
+                <h2>Tus Grafos</h2>
                 <div>
                   <button id="btn-select-all" class="btn btn-ghost" title="Seleccionar todos">☑</button>
                   <button id="btn-select-none" class="btn btn-ghost" title="Deseleccionar todos"
@@ -254,7 +254,7 @@
   <div id="results-modal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h2><span class="icon">📊</span> Resultados</h2>
+        <h2>Resultados</h2>
         <button class="btn btn-ghost modal-close">✕</button>
       </div>
       <div class="results-content">
