@@ -2,17 +2,19 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.1.7** (Ajustes de Grid y Vista Predeterminada)
+**v0.1.8** (Pestaña de Registros Manuales con Monitoreo)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Sistema de rejilla del Dashboard optimizado para legibilidad.
 - 🟢 **Tipografía:** Implementación de sistema dual: Lora (Serif) e Inter (Sans).
 - 🟢 **Dashboard Avanzado:** Vista de Columnas establecida como predeterminada. Alineación de textos mejorada.
-- 🟢 **Controlador (App):** Sincronización de estados y carga concurrente de actividad.
+- 🟢 **Registros Manuales:** Nueva pestaña para marcadores de páginas con monitoreo asíncrono de fecha de modificación.
+- 🟢 **Controlador (App):** Sincronización de estados, carga concurrente de actividad y consultas Datalog para monitoreo.
 - 🟢 **Componentes (UI):** Renderizado dual (Acordeón/Tabular). Limpieza de estilos en línea en headers.
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
 
 ## 3. Historial Reciente
+- **PESTAÑA DE REGISTROS CON MONITOREO (v0.1.8):** Se integró una nueva sección de "Registros" que funciona como un sistema de marcadores inteligentes para páginas específicas. El usuario puede guardar manualmente títulos de páginas y asignarlos a un grafo. La interfaz incluye una columna de "Estado" que realiza una consulta asíncrona mediante Datalog (`max ?time`) para obtener la fecha de la última modificación real de cualquier bloque dentro de esa página o del nodo de la página misma. Se actualizó `storage.js` para persistir estos registros y `ui.js` para renderizar el estado de carga (spinners) mientras se obtienen los datos de la API.
 - **OPTIMIZACIÓN DE GRID Y VISTA PREDETERMINADA:** Se estableció la **Vista de Columnas** como el modo de visualización inicial del Dashboard para ofrecer una visión general rápida al cargar la app. Se rediseñó el sistema de rejilla CSS de la tabla para priorizar la columna "Elemento afectado", dándole mayor ancho flexible (`minmax(200px, 2fr)`) y fijando el ancho de la columna "Grafo" a `180px`. Además, se eliminaron estilos CSS en línea del header del Dashboard, delegando la maquetación de los filtros a clases CSS dedicadas (`.dashboard-header` y `.dashboard-filters`) para asegurar un comportamiento responsivo correcto.
 - 🟢 **Integración Roam API:** Pull de actividad mejorado.
 - **REDISEÑO MINIMALISTA (ESTILO CLAUDE):** Se transformó la interfaz para adoptar una estética limpia y profesional inspirada en el centro de configuración de Claude (Anthropic). Los cambios incluyen la eliminación de la clase `.card` (eliminando bordes, sombras y fondos de contenedores), el uso de una paleta de colores crema/blanco ultraligera, y la introducción de la fuente **Lora (Serif)** para encabezados refinados. El panel izquierdo ahora es puramente textual (sin "botones" pesados), permitiendo que la interfaz respire y el contenido sea el protagonista.

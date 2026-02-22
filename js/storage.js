@@ -7,7 +7,8 @@ const Storage = {
     KEYS: {
         GRAPHS: 'roam_mg_graphs',
         LOGS: 'roam_mg_logs',
-        SELECTED_GRAPHS: 'roam_mg_selected'
+        SELECTED_GRAPHS: 'roam_mg_selected',
+        REGISTROS: 'roam_mg_registros'
     },
 
     MAX_LOGS: 100,
@@ -170,6 +171,54 @@ const Storage = {
      */
     clearLogs() {
         localStorage.removeItem(this.KEYS.LOGS);
+    },
+
+    /**
+     * Get manual registers
+     * @returns {Array} Array of register objects
+     */
+    getRegistros() {
+        try {
+            const data = localStorage.getItem(this.KEYS.REGISTROS);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Error reading registros from storage', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save a new manual register
+     * @param {Object} data - { graph, title }
+     */
+    saveRegistro(data) {
+        const registros = this.getRegistros();
+        const newReg = {
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+            graph: data.graph,
+            title: data.title,
+            addedAt: new Date().toISOString()
+        };
+        registros.push(newReg);
+        try {
+            localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
+        } catch (e) {
+            console.error('Error saving registros to storage', e);
+        }
+    },
+
+    /**
+     * Delete a manual register
+     * @param {string} id - Register ID
+     */
+    deleteRegistro(id) {
+        let registros = this.getRegistros();
+        registros = registros.filter(r => r.id !== id);
+        try {
+            localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
+        } catch (e) {
+            console.error('Error saving registros after delete', e);
+        }
     }
 };
 

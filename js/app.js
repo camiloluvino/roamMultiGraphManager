@@ -202,6 +202,29 @@ const App = {
                 }
             }
         });
+
+        // Registros interactions
+        document.getElementById('btn-show-add-registro')?.addEventListener('click', () => {
+            document.getElementById('add-registro-container').style.display = 'block';
+        });
+
+        document.getElementById('btn-cancel-registro')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('add-registro-container').style.display = 'none';
+            document.getElementById('form-add-registro').reset();
+        });
+
+        document.getElementById('form-add-registro')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addRegistro();
+        });
+
+        document.getElementById('registros-content')?.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.btn-delete-registro');
+            if (deleteBtn) {
+                this.deleteRegistro(deleteBtn.dataset.id);
+            }
+        });
     },
 
     /**
@@ -242,6 +265,8 @@ const App = {
         // Auto-refresh dashboard when entering it
         if (viewName === 'dashboard') {
             this.refreshDashboard();
+        } else if (viewName === 'registros') {
+            this.refreshRegistros();
         }
     },
 
@@ -351,6 +376,13 @@ const App = {
     loadGraphs() {
         const graphs = Storage.getGraphs();
         this.renderGraphLists(graphs);
+
+        // Update registros select
+        const select = document.getElementById('registro-graph');
+        if (select) {
+            select.innerHTML = '<option value="">Selecciona un grafo</option>' +
+                Object.keys(graphs).map(name => `<option value="${name}">${name}</option>`).join('');
+        }
     },
 
     /**
@@ -707,6 +739,79 @@ const App = {
         const container = document.getElementById('logs-list');
         const logs = Storage.getLogs();
         UI.renderLogs(container, logs);
+    },
+
+    /**
+     * Refresh view of manual registers
+     */
+    async refreshRegistros() {
+        const container = document.getElementById('registros-content');
+        if (!container) return;
+        const registros = Storage.getRegistros();
+        // Sort newest first
+        registros.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+
+        // Render in "loading times" state
+        UI.renderRegistros(container, registros, true);
+
+        if (registros.length === 0) return;
+
+        // Fetch last edit times
+        const timePromises = registros.map(async (reg) => {
+            const config = Storage.getGraph(reg.graph);
+            if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
+            try {
+                const graph = RoamAPI.initGraph(reg.graph, config.token);
+                // Return max edited time 
+                const time = await RoamAPI.getPageEditTime(graph, reg.title);
+                return { ...reg, lastEdited: time, error: null };
+            } catch (e) {
+                return { ...reg, lastEdited: null, error: 'Error API' };
+            }
+        });
+
+        const updatedRegistros = await Promise.all(timePromises);
+        UI.renderRegistros(container, updatedRegistros, false);
+    },
+
+    /**
+     * Add new manual register
+     */
+    addRegistro() {
+        const graph = document.getElementById('registro-graph').value;
+        const title = document.getElementById('registro-title').value.trim();
+
+        if (!graph || !title) {
+            UI.toast('Por favor completa todos los campos', 'error');
+            return;
+        }
+
+        Storage.saveRegistro({ graph, title });
+
+        document.getElementById('add-registro-container').style.display = 'none';
+        document.getElementById('form-add-registro').reset();
+
+        Storage.addLog('success', `Registro manual añadido: ${title}`);
+        UI.toast('Página registrada con éxito', 'success');
+
+        this.refreshRegistros();
+        this.renderLogs();
+    },
+
+    /**
+     * Delete manual register
+     */
+    async deleteRegistro(id) {
+        const confirmed = await UI.confirm(
+            'Eliminar registro',
+            '¿Seguro que quieres eliminar este marcador? La página no se borrará de Roam.'
+        );
+
+        if (confirmed) {
+            Storage.deleteRegistro(id);
+            UI.toast('Registro eliminado', 'info');
+            this.refreshRegistros();
+        }
     }
 };
 

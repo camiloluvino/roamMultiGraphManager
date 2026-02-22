@@ -62,6 +62,9 @@
           <button class="nav-btn active" data-view="dashboard">
             Dashboard
           </button>
+          <button class="nav-btn" data-view="registros">
+            Registros
+          </button>
           <button class="nav-btn" data-view="operations">
             Operaciones
           </button>
@@ -104,6 +107,45 @@
               <div class="icon" style="font-size: 2rem;"></div>
               <p>Selecciona grafos en el panel izquierdo para ver su actividad reciente.</p>
             </div>
+          </div>
+        </div>
+
+        <!-- Registros View -->
+        <div id="view-registros" class="main-view">
+          <div class="dashboard-header">
+            <h2>Páginas Registradas</h2>
+            <div class="dashboard-filters">
+              <button id="btn-show-add-registro" class="btn btn-secondary">+ Nuevo Registro</button>
+            </div>
+          </div>
+
+          <!-- Add Registro Form (Hidden by default) -->
+          <div id="add-registro-container" class="card" style="display: none; margin-bottom: var(--spacing-lg);">
+            <div class="card-header">
+              <h3>Agregar Registro Manual</h3>
+              <button id="btn-cancel-registro" class="btn btn-ghost" title="Cancelar">✕</button>
+            </div>
+            <form id="form-add-registro" class="operation-form" style="margin-top: var(--spacing-md);">
+              <div class="form-group">
+                <label for="registro-graph">Grafo *</label>
+                <select id="registro-graph" class="form-control" required>
+                  <option value="">Selecciona un grafo</option>
+                  <!-- Filled by JS -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="registro-title">Título de la Página *</label>
+                <input type="text" id="registro-title" placeholder="Ej: área/participaciónSocial/grafoDeDiscurso"
+                  required>
+              </div>
+              <div class="btn-group" style="margin-top: var(--spacing-md);">
+                <button type="submit" class="btn btn-success">Guardar Registro</button>
+              </div>
+            </form>
+          </div>
+
+          <div id="registros-content" class="dashboard-content">
+            <!-- List of stored manual registers -->
           </div>
         </div>
 

@@ -141,6 +141,31 @@ const RoamAPI = {
     },
 
     /**
+     * Get the last modification time of a page
+     * @param {Object} graph - Graph config
+     * @param {string} title - Page title
+     * @returns {Promise<number|null>} Timestamp or null
+     */
+    async getPageEditTime(graph, title) {
+        const safeTitle = title.replace(/"/g, '\\"');
+        // Quering max edit time from blocks inside the page
+        const queryBlocks = `[:find (max ?time) . :where [?p :node/title "${safeTitle}"] [?b :block/page ?p] [?b :edit/time ?time]]`;
+        let maxTime = await this.q(graph, queryBlocks);
+
+        // If not found or empty page, try to get page node's own edit time
+        if (!maxTime || (Array.isArray(maxTime) && maxTime.length === 0)) {
+            const queryPage = `[:find (max ?time) . :where [?p :node/title "${safeTitle}"] [?p :edit/time ?time]]`;
+            maxTime = await this.q(graph, queryPage);
+        }
+
+        // Clean up array format if returned
+        if (Array.isArray(maxTime)) {
+            return maxTime.length > 0 ? maxTime[0] : null;
+        }
+        return maxTime || null;
+    },
+
+    /**
      * Create a new page with initial block content
      * @param {Object} graph - Graph config
      * @param {string} title - Page title

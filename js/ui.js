@@ -544,6 +544,75 @@ const UI = {
                 </div>
             </div>
         `;
+    },
+
+    /**
+     * Render Registros list
+     */
+    renderRegistros(container, registros, loadingTimes = false) {
+        if (!registros || registros.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>No tienes páginas registradas aún.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const listHTML = registros.map(reg => {
+            const dateStr = new Date(reg.addedAt).toLocaleDateString('es');
+            // Using a simple URL scheme that Roam uses, encoding title
+            const roamUrl = `https://roamresearch.com/#/app/${encodeURIComponent(reg.graph)}/page/${encodeURIComponent(reg.title)}`;
+
+            let timeHtml = '<span class="snippet-text" style="color: var(--text-muted);"><span class="spinner" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px; border-width: 1px;"></span> Consultando...</span>';
+
+            if (!loadingTimes) {
+                if (reg.lastEdited) {
+                    const editDate = new Date(reg.lastEdited).toLocaleString('es', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    timeHtml = `<span class="snippet-text" style="color: var(--accent-green);">Modificado: ${editDate}</span>`;
+                } else if (reg.error) {
+                    timeHtml = `<span class="snippet-text" style="color: var(--error-color);">${this.escapeHTML(reg.error)}</span>`;
+                } else {
+                    timeHtml = `<span class="snippet-text" style="color: var(--text-muted);">Sin datos</span>`;
+                }
+            }
+
+            return `
+                <div class="activity-item" style="grid-template-columns: 180px minmax(200px, 2fr) 200px 100px 140px;">
+                    <div>
+                        <span class="badge" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color);">${this.escapeHTML(reg.graph)}</span>
+                    </div>
+                    <div class="cell-content">
+                        <a href="${roamUrl}" target="_blank" class="title-text" style="color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 1.05rem;">
+                            ${this.escapeHTML(reg.title)} <span style="font-size: 0.8em; opacity: 0.5;">↗</span>
+                        </a>
+                        <span class="snippet-text">Agregado: ${dateStr}</span>
+                    </div>
+                    <div>
+                        ${timeHtml}
+                    </div>
+                    <div></div>
+                    <div>
+                        <button class="btn btn-ghost btn-delete-registro" data-id="${reg.id}" style="color: var(--error-color);" title="Eliminar registro">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="activity-table" style="overflow-x: auto;">
+                <div class="activity-list-header" style="grid-template-columns: 180px minmax(200px, 2fr) 200px 100px 140px;">
+                    <div>Grafo</div>
+                    <div>Página</div>
+                    <div>Estado</div>
+                    <div></div>
+                    <div>Acción</div>
+                </div>
+                <div class="activity-table-body">
+                    ${listHTML}
+                </div>
+            </div>
+        `;
     }
 };
 
