@@ -310,12 +310,27 @@ const UI = {
     },
 
     /**
+     * Get sort icon HTML based on current state
+     * @param {Object} sortState - Current sort state {column, direction}
+     * @param {string} column - Column name
+     */
+    getSortIcon(sortState, column) {
+        if (!sortState || sortState.column !== column) {
+            return '<span class="sort-icon" style="opacity: 0.3; margin-left: 4px; font-size: 0.8em;">↕</span>';
+        }
+        return sortState.direction === 'asc'
+            ? '<span class="sort-icon" style="color: var(--text-primary); margin-left: 4px; font-size: 0.8em;">▲</span>'
+            : '<span class="sort-icon" style="color: var(--text-primary); margin-left: 4px; font-size: 0.8em;">▼</span>';
+    },
+
+    /**
      * Render dashboard activity feed
      * @param {HTMLElement} container - Dashboard content container
      * @param {Array} graphData - Array of objects { graphName, items, error }
      * @param {string} viewMode - 'accordion', 'columns', or 'list'
+     * @param {Object} sortState - Sort state configuration
      */
-    renderDashboardActivity(container, graphData, viewMode = 'columns') {
+    renderDashboardActivity(container, graphData, viewMode = 'columns', sortState = null) {
         if (!graphData || graphData.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -327,7 +342,7 @@ const UI = {
 
         switch (viewMode) {
             case 'columns':
-                container.innerHTML = this._renderColumnsView(graphData);
+                container.innerHTML = this._renderColumnsView(graphData, sortState);
                 break;
             case 'accordion':
             default:
@@ -401,7 +416,7 @@ const UI = {
                         hour: '2-digit', minute: '2-digit'
                     });
                     const icon = isCreate ? '+' : '~';
-                    const content = isCreate ? 'Página creada' : (item.content || 'Bloque modificado');
+                    const content = isCreate ? 'Página creada' : (item.content || 'Página modificada');
 
                     return `
                         <div class="activity-block-item">
@@ -454,7 +469,7 @@ const UI = {
     /**
      * Helper to render columns view
      */
-    _renderColumnsView(graphData) {
+    _renderColumnsView(graphData, sortState) {
         // Flatten the data for table view
         let allItems = [];
 
@@ -474,7 +489,29 @@ const UI = {
             `;
         }
 
-        allItems.sort((a, b) => b.time - a.time);
+        if (sortState) {
+            allItems.sort((a, b) => {
+                let valA, valB;
+                switch (sortState.column) {
+                    case 'graph':
+                        valA = a.graph || ''; valB = b.graph || ''; break;
+                    case 'title':
+                        valA = (a.type === 'create' ? a.title : a.pageTitle) || '';
+                        valB = (b.type === 'create' ? b.title : b.pageTitle) || '';
+                        break;
+                    case 'action':
+                        valA = a.type || ''; valB = b.type || ''; break;
+                    case 'time':
+                    default:
+                        valA = a.time || 0; valB = b.time || 0; break;
+                }
+                if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        } else {
+            allItems.sort((a, b) => b.time - a.time);
+        }
 
         const listHTML = allItems.map(item => {
             if (item.type === 'error') {
@@ -497,9 +534,6 @@ const UI = {
             const actionText = isCreate ? 'Creación' : 'Modificación';
             const actionIcon = isCreate ? '+' : '~';
 
-            const elementText = isCreate ? 'Página' : 'Bloque';
-            const elementIcon = isCreate ? '📄' : '🧱';
-
             const title = isCreate ? item.title : item.pageTitle;
             const timeStr = new Date(item.time).toLocaleString('es', {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -518,9 +552,6 @@ const UI = {
                     <div>
                         <span title="${actionText}">${actionIcon} ${actionText}</span>
                     </div>
-                    <div>
-                        <span class="badge ${isCreate ? 'badge-success' : 'badge-pending'}">${elementText}</span>
-                    </div>
                     <div style="color: var(--text-muted); font-size: 0.8rem;">
                         ${timeStr}
                     </div>
@@ -531,11 +562,10 @@ const UI = {
         return `
             <div class="activity-table" style="overflow-x: auto;">
                 <div class="activity-list-header">
-                    <div>Grafo</div>
-                    <div>Elemento afectado</div>
-                    <div>Acción</div>
-                    <div>Tipo</div>
-                    <div>Fecha</div>
+                    <div class="sortable-header" data-column="graph" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Grafo ${this.getSortIcon(sortState, 'graph')}</div>
+                    <div class="sortable-header" data-column="title" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Elemento afectado ${this.getSortIcon(sortState, 'title')}</div>
+                    <div class="sortable-header" data-column="action" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Acción ${this.getSortIcon(sortState, 'action')}</div>
+                    <div class="sortable-header" data-column="time" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Fecha ${this.getSortIcon(sortState, 'time')}</div>
                 </div>
                 <div class="activity-table-body">
                     ${listHTML}
@@ -547,7 +577,7 @@ const UI = {
     /**
      * Render Registros list
      */
-    renderRegistros(container, registros, loadingTimes = false) {
+    renderRegistros(container, registros, loadingTimes = false, sortState = null) {
         if (!registros || registros.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -555,6 +585,23 @@ const UI = {
                 </div>
             `;
             return;
+        }
+
+        if (sortState) {
+            registros.sort((a, b) => {
+                let valA, valB;
+                switch (sortState.column) {
+                    case 'graph': valA = a.graph || ''; valB = b.graph || ''; break;
+                    case 'title': valA = a.title || ''; valB = b.title || ''; break;
+                    case 'status': valA = a.lastEdited || 0; valB = b.lastEdited || 0; break;
+                    case 'addedAt':
+                    default:
+                        valA = new Date(a.addedAt).getTime(); valB = new Date(b.addedAt).getTime(); break;
+                }
+                if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
         }
 
         const listHTML = registros.map(reg => {
@@ -584,7 +631,6 @@ const UI = {
                         <a href="${roamUrl}" target="_blank" class="title-text" style="color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 1.05rem; word-break: break-word;" title="${this.escapeHTML(reg.title)}">
                             ${this.escapeHTML(reg.title)} <span style="font-size: 0.8em; opacity: 0.5;">↗</span>
                         </a>
-                        <span class="snippet-text">Agregado: ${dateStr}</span>
                     </div>
                     <div>
                         ${timeHtml}
@@ -599,9 +645,9 @@ const UI = {
         container.innerHTML = `
             <div class="activity-table" style="overflow-x: auto;">
                 <div class="activity-list-header" style="grid-template-columns: 180px minmax(300px, 1fr) 250px 100px;">
-                    <div>Grafo</div>
-                    <div>Página</div>
-                    <div>Estado</div>
+                    <div class="sortable-header" data-column="graph" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Grafo ${this.getSortIcon(sortState, 'graph')}</div>
+                    <div class="sortable-header" data-column="title" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Página ${this.getSortIcon(sortState, 'title')}</div>
+                    <div class="sortable-header" data-column="status" style="cursor: pointer; user-select: none; display: flex; align-items: center;">Estado ${this.getSortIcon(sortState, 'status')}</div>
                     <div style="text-align: right; padding-right: 16px;">Acción</div>
                 </div>
                 <div class="activity-table-body">

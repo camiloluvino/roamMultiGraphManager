@@ -3,6 +3,14 @@ const App = {
     currentOperation: 'create',
     currentView: 'dashboard', // default top-level view
 
+    // Sort states
+    dashboardSort: { column: 'time', direction: 'desc' },
+    registrosSort: { column: 'addedAt', direction: 'desc' },
+
+    // Data caches for sorting without API calls
+    lastDashboardData: null,
+    lastRegistrosData: null,
+
     /**
      * Initialize the application
      */
@@ -13,6 +21,33 @@ const App = {
         this.loadGraphs();
         this.renderLogs();
         this.setActiveTab('create');
+    },
+
+    sortDashboard(column) {
+        if (this.dashboardSort.column === column) {
+            this.dashboardSort.direction = this.dashboardSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.dashboardSort.column = column;
+            this.dashboardSort.direction = 'asc';
+        }
+        if (this.lastDashboardData) {
+            const container = document.getElementById('dashboard-content');
+            const viewMode = document.getElementById('dashboard-view-mode')?.value || 'columns';
+            UI.renderDashboardActivity(container, this.lastDashboardData, viewMode, this.dashboardSort);
+        }
+    },
+
+    sortRegistros(column) {
+        if (this.registrosSort.column === column) {
+            this.registrosSort.direction = this.registrosSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.registrosSort.column = column;
+            this.registrosSort.direction = 'asc';
+        }
+        if (this.lastRegistrosData) {
+            const container = document.getElementById('registros-content');
+            UI.renderRegistros(container, this.lastRegistrosData, false, this.registrosSort);
+        }
     },
 
     /**
@@ -71,7 +106,24 @@ const App = {
      * Bind UI event listeners
      */
     bindEvents() {
-        // Top-level View switching
+        // Table sorting delegation
+        document.addEventListener('click', (e) => {
+            const dashboardHeader = e.target.closest('#dashboard-content .sortable-header');
+            if (dashboardHeader) {
+                const column = dashboardHeader.dataset.column;
+                this.sortDashboard(column);
+                return;
+            }
+
+            const registrosHeader = e.target.closest('#registros-content .sortable-header');
+            if (registrosHeader) {
+                const column = registrosHeader.dataset.column;
+                this.sortRegistros(column);
+                return;
+            }
+        });
+
+        // Top-level Navigation switching
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => this.setActiveView(btn.dataset.view));
         });
@@ -84,7 +136,7 @@ const App = {
         });
 
         // Dashboard filters change
-        const filters = ['dashboard-time-filter', 'dashboard-action-filter', 'dashboard-type-filter', 'dashboard-view-mode'];
+        const filters = ['dashboard-time-filter', 'dashboard-action-filter', 'dashboard-view-mode'];
         filters.forEach(filterId => {
             document.getElementById(filterId)?.addEventListener('change', () => {
                 if (this.currentView === 'dashboard') {
@@ -282,7 +334,6 @@ const App = {
         // Filtering implementation
         const timeFilter = document.getElementById('dashboard-time-filter')?.value || 'all';
         const actionFilter = document.getElementById('dashboard-action-filter')?.value || 'all';
-        const typeFilter = document.getElementById('dashboard-type-filter')?.value || 'all';
 
         let since = 0;
         let until = Infinity;
@@ -347,15 +398,6 @@ const App = {
                     items = items.filter(item => item.type === actionFilter);
                 }
 
-                // Apply Type Filter
-                if (typeFilter !== 'all') {
-                    items = items.filter(item => {
-                        const isPage = item.type === 'create';
-                        const itemType = isPage ? 'page' : 'block';
-                        return itemType === typeFilter;
-                    });
-                }
-
                 items.sort((a, b) => b.time - a.time);
 
                 return { graphName, items: items.slice(0, 30), error: null };
@@ -367,11 +409,12 @@ const App = {
         });
 
         graphData = await Promise.all(promises);
+        this.lastDashboardData = graphData;
 
         const viewMode = document.getElementById('dashboard-view-mode')?.value || 'columns';
 
         // Render events grouped by graph according to the selected view mode
-        UI.renderDashboardActivity(container, graphData, viewMode);
+        UI.renderDashboardActivity(container, graphData, viewMode, this.dashboardSort);
     },
 
     /**
@@ -752,11 +795,11 @@ const App = {
         const container = document.getElementById('registros-content');
         if (!container) return;
         const registros = Storage.getRegistros();
-        // Sort newest first
-        registros.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+        // Default initial sorting if not cached
 
+        this.lastRegistrosData = registros;
         // Render in "loading times" state
-        UI.renderRegistros(container, registros, true);
+        UI.renderRegistros(container, registros, true, this.registrosSort);
 
         if (registros.length === 0) return;
 
@@ -775,7 +818,8 @@ const App = {
         });
 
         const updatedRegistros = await Promise.all(timePromises);
-        UI.renderRegistros(container, updatedRegistros, false);
+        this.lastRegistrosData = updatedRegistros;
+        UI.renderRegistros(container, updatedRegistros, false, this.registrosSort);
     },
 
     /**

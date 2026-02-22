@@ -738,7 +738,7 @@ h3 {
 
 .activity-list-header {
   display: grid;
-  grid-template-columns: 180px minmax(200px, 2fr) 130px 100px 140px;
+  grid-template-columns: 180px minmax(200px, 2fr) 130px 140px;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--bg-secondary);
@@ -748,6 +748,23 @@ h3 {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.sortable-header {
+  transition: var(--transition-fast);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  margin: -4px;
+}
+
+.sortable-header:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.sort-icon {
+  display: inline-block;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 @media (max-width: 900px) {
@@ -763,7 +780,7 @@ h3 {
 
 .activity-item {
   display: grid;
-  grid-template-columns: 180px minmax(200px, 2fr) 130px 100px 140px;
+  grid-template-columns: 180px minmax(200px, 2fr) 130px 140px;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   align-items: center;

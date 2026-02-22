@@ -310,16 +310,13 @@ const RoamAPI = {
             constraints += `[(>= ?time ${thirtyDaysAgo})] `;
         }
 
-        // Advanced query: find blocks, their edit time, string, and the title of their ancestor page
-        const query = `[:find ?pageTitle ?pageUid ?blockUid ?time ?string
+        // Query only pages and their edit times to make it lighter
+        const query = `[:find ?title ?uid ?time
                        :where 
-                       [?b :edit/time ?time]
-                       ${constraints}
-                       [?b :block/uid ?blockUid]
-                       [?b :block/string ?string]
-                       [?b :block/page ?p]
-                       [?p :node/title ?pageTitle]
-                       [?p :block/uid ?pageUid]]`;
+                       [?p :node/title ?title]
+                       [?p :block/uid ?uid]
+                       [?p :edit/time ?time]
+                       ${constraints}]`;
 
         const result = await this.q(graph, query);
 
@@ -327,13 +324,12 @@ const RoamAPI = {
 
         // Map, sort descending by time, and slice
         return result
-            .map(([pageTitle, pageUid, blockUid, time, string]) => ({
+            .map(([title, uid, time]) => ({
                 type: 'edit',
-                pageTitle,
-                pageUid,
-                blockUid,
+                pageTitle: title,
+                pageUid: uid,
                 time,
-                content: string,
+                content: 'Página modificada',
                 graph: graph.name
             }))
             .sort((a, b) => b.time - a.time)
