@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.4.0** (Nueva Característica: Auto-Shutdown)
+**v0.4.1** (Persistencia de selección de Plugins)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -20,8 +20,13 @@
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
 - 🟢 **🔌 Plugins:** Pestaña dedicada para gestionar y sincronizar plugins `roam/js/` en múltiples grafos simultáneamente.
 - 🟢 **Auto-Shutdown (NUEVO):** Cierre automático de la terminal (servidor local) al cerrar la pestaña del navegador mediante sistema de heartbeat.
+- 🟢 **Persistencia de Plugins (v0.4.1):** La selección de plugins de la lista inferior ahora persiste entre sesiones.
 
 ## 3. Historial Reciente
+- **PERSISTENCIA DE SELECCIÓN DE PLUGINS (v0.4.1):**
+  - **Memoria de Selección:** Se implementó la persistencia de los plugins seleccionados en la lista inferior usando `localStorage`.
+  - **Recuperación Automática:** Al iniciar la app, los plugins que estaban seleccionados vuelven a aparecer en la columna de "Plugin Seleccionado".
+  - **Sincronización:** El almacenamiento se actualiza automáticamente al marcar/desmarcar plugins o al eliminarlos del registro.
 - **AUTO-SHUTDOWN RELIABLE (v0.4.0):** Se sustituyó el servidor genérico de Python por uno personalizado para mejorar la experiencia de usuario:
   - **Mecanismo Heartbeat:** Implementación de un sistema de "latido" donde la app avisa al servidor que sigue activa cada 2 segundos.
   - **Cierre Automático:** Si el servidor deja de recibir latidos por más de 5 segundos (ej. al cerrar la pestaña), se apaga automáticamente, liberando la consola.

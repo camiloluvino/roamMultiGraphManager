@@ -11,7 +11,7 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 - **Historial Dedicado:** Nueva pestaña que centraliza todos los logs de operaciones en una vista de pantalla completa.
 - **Filtros Avanzados:** Filtra por tiempo (Hoy/Ayer/Semana), tipo de acción (Creación/Modificación) y tipo de elemento (Página/Bloque).
 - **Gestión de Grafos Mejorada:** Los grafos se gestionan y activan íntegramente desde la pestaña de Configuración, eliminando la necesidad de una barra lateral.
-- **Persistencia de Selección:** Recuerda tus grafos activos automáticamente entre sesiones.
+- **Persistencia de Selección:** Recuerda tus grafos activos y los plugins seleccionados automáticamente entre sesiones.
 - **Crear páginas** en múltiples grafos con un solo clic.
 - **Modificar títulos** de páginas existentes.
 - **Eliminar páginas** con confirmación de seguridad.

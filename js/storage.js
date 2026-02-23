@@ -10,7 +10,8 @@ const Storage = {
         SELECTED_GRAPHS: 'roam_mg_selected',
         REGISTROS: 'roam_mg_registros',
         CONVERSACIONES: 'roam_mg_conversaciones',
-        PLUGINS: 'roam_mg_plugins'
+        PLUGINS: 'roam_mg_plugins',
+        SELECTED_PLUGINS: 'roam_mg_selected_plugins'
     },
 
     MAX_LOGS: 100,
@@ -122,6 +123,32 @@ const Storage = {
             localStorage.setItem(this.KEYS.SELECTED_GRAPHS, JSON.stringify(selectedGraphs));
         } catch (e) {
             console.error('Error saving selected graphs to storage', e);
+        }
+    },
+
+    /**
+     * Get selected plugins
+     * @returns {string[]} Array of selected plugin names
+     */
+    getSelectedPlugins() {
+        try {
+            const data = localStorage.getItem(this.KEYS.SELECTED_PLUGINS);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Error reading selected plugins from storage', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save selected plugins
+     * @param {string[]} selectedPlugins - Array of selected plugin names
+     */
+    saveSelectedPlugins(selectedPlugins) {
+        try {
+            localStorage.setItem(this.KEYS.SELECTED_PLUGINS, JSON.stringify(selectedPlugins));
+        } catch (e) {
+            console.error('Error saving selected plugins to storage', e);
         }
     },
 

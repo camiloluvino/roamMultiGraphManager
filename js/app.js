@@ -21,11 +21,33 @@ const App = {
         this.seedDefaultGraphs();
         this.bindEvents();
         this.loadSelectedGraphsState();
+        this.loadSelectedPluginsState();
         this.loadGraphs();
         this.renderLogs();
         this.setActiveTab('create');
         this.renderGraphCheckboxes();
         this.setupAutoShutdown();
+    },
+
+    /**
+     * Load selected plugins state from storage
+     */
+    loadSelectedPluginsState() {
+        const saved = Storage.getSelectedPlugins();
+        this.selectedPlugins = new Set(saved);
+
+        // Opcionalmente, verificar que los plugins sigan existiendo
+        const allPlugins = Storage.getPlugins();
+        let changed = false;
+        for (const name of this.selectedPlugins) {
+            if (!allPlugins.find(p => p.name === name)) {
+                this.selectedPlugins.delete(name);
+                changed = true;
+            }
+        }
+        if (changed) {
+            Storage.saveSelectedPlugins(Array.from(this.selectedPlugins));
+        }
     },
 
     /**
@@ -1275,6 +1297,8 @@ const App = {
             this.selectedPlugins.delete(pluginName);
         }
 
+        Storage.saveSelectedPlugins(Array.from(this.selectedPlugins));
+
         // Update plugin info column with all selected plugins
         this.renderPluginInfo();
     },
@@ -1500,6 +1524,13 @@ const App = {
             if (plugin && plugin.name === this.selectedPluginName) {
                 this.selectedPluginName = null;
             }
+
+            // Si el plugin estaba seleccionado para sync, quitarlo de la selección persistente
+            if (plugin && this.selectedPlugins.has(plugin.name)) {
+                this.selectedPlugins.delete(plugin.name);
+                Storage.saveSelectedPlugins(Array.from(this.selectedPlugins));
+            }
+
             Storage.deletePlugin(id);
             UI.toast('Plugin eliminado del registro', 'info');
             this.refreshPlugins();
