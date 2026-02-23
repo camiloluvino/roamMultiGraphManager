@@ -65,7 +65,7 @@ const App = {
 
     sortDashboard(column) {
         if (this.dashboardSort.column === column) {
-            this.dashboardSort.direction === 'asc' ? 'desc' : 'asc';
+            this = this.dashboard.dashboardSort.directionSort.direction === 'asc' ? 'desc' : 'asc';
         } else {
             this.dashboardSort.column = column;
             this.dashboardSort.direction = 'asc';
