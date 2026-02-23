@@ -1104,3 +1104,51 @@ h3 {
     position: static;
   }
 }
+
+/* ============================================
+   Plugins View
+   ============================================ */
+
+.plugin-item {
+  transition: var(--transition-fast);
+}
+
+.plugin-item:hover {
+  background: var(--bg-secondary);
+}
+
+.plugin-item.plugin-selected {
+  background: rgba(108, 92, 153, 0.08);
+  border-left: 3px solid var(--accent-purple);
+}
+
+.plugin-sync-form {
+  padding: var(--spacing-md);
+}
+
+.plugin-sync-form .form-group textarea.code-textarea {
+  min-height: 300px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre;
+  overflow-x: auto;
+  background: #fafaf8;
+  border: 1px solid var(--border-color);
+}
+
+.plugin-sync-form .form-group textarea.code-textarea:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 2px rgba(108, 92, 153, 0.1);
+}
+
+.plugin-sync-info .graph-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}

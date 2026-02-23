@@ -2,6 +2,7 @@ const App = {
     selectedGraphs: new Set(),
     currentOperation: 'create',
     currentView: 'dashboard', // default top-level view
+    selectedPluginName: null, // currently selected plugin for sync
 
     // Sort states
     dashboardSort: { column: 'time', direction: 'desc' },
@@ -375,6 +376,44 @@ const App = {
                 this.deleteConversacion(deleteBtn.dataset.id);
             }
         });
+
+        // Plugins interactions
+        document.getElementById('btn-auto-scan-plugins')?.addEventListener('click', () => {
+            this.autoScanPlugins();
+        });
+
+        // Plugin list: select plugin or delete
+        document.getElementById('plugins-content')?.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.btn-delete-plugin');
+            if (deleteBtn) {
+                e.stopPropagation();
+                this.deletePlugin(deleteBtn.dataset.id);
+                return;
+            }
+            const pluginItem = e.target.closest('.plugin-item');
+            if (pluginItem) {
+                const pluginName = pluginItem.dataset.pluginName;
+                this.selectPlugin(pluginName);
+            }
+        });
+
+        // Plugin sync panel: delegated events (buttons are dynamically created)
+        document.getElementById('plugin-sync-panel')?.addEventListener('click', (e) => {
+            if (e.target.closest('#btn-execute-sync')) {
+                this.executeSyncPlugin();
+            }
+            if (e.target.closest('#btn-cancel-sync')) {
+                this.selectedPluginName = null;
+                this.refreshPlugins();
+            }
+        });
+
+        // Plugin sync: live preview when typing code
+        document.getElementById('plugin-sync-panel')?.addEventListener('input', (e) => {
+            if (e.target.id === 'sync-code') {
+                this.updateSyncPreview();
+            }
+        });
     },
 
     /**
@@ -412,13 +451,15 @@ const App = {
             view.classList.toggle('active', view.id === `view-${viewName}`);
         });
 
-        // Auto-refresh dashboard when entering it
+        // Auto-refresh when entering views
         if (viewName === 'dashboard') {
             this.refreshDashboard();
         } else if (viewName === 'registros') {
             this.refreshRegistros();
         } else if (viewName === 'conversaciones') {
             this.refreshConversaciones();
+        } else if (viewName === 'plugins') {
+            this.refreshPlugins();
         }
     },
 
@@ -1147,6 +1188,270 @@ const App = {
             Storage.deleteConversacion(id);
             UI.toast('Conversación eliminada', 'info');
             this.refreshConversaciones();
+        }
+    },
+
+    // =============================================
+    // PLUGINS MANAGEMENT
+    // =============================================
+
+    /**
+     * Refresh plugins view: render list and sync panel
+     */
+    refreshPlugins() {
+        const container = document.getElementById('plugins-content');
+        const syncPanel = document.getElementById('plugin-sync-panel');
+        if (!container) return;
+
+        const plugins = Storage.getPlugins();
+        const totalGraphs = Storage.getGraphNames().length;
+
+        UI.renderPlugins(container, plugins, totalGraphs, this.selectedPluginName);
+
+        // Render sync panel
+        if (syncPanel) {
+            const selectedPlugin = plugins.find(p => p.name === this.selectedPluginName);
+            const allGraphNames = Storage.getGraphNames();
+            UI.renderPluginSyncPanel(syncPanel, selectedPlugin || null, totalGraphs, allGraphNames);
+        }
+    },
+
+    /**
+     * Select a plugin for syncing
+     * @param {string} pluginName - Plugin page title
+     */
+    selectPlugin(pluginName) {
+        // Toggle selection
+        if (this.selectedPluginName === pluginName) {
+            this.selectedPluginName = null;
+        } else {
+            this.selectedPluginName = pluginName;
+        }
+        this.refreshPlugins();
+    },
+
+    /**
+     * Auto scan all active graphs for roam/js/ pages
+     */
+    async autoScanPlugins() {
+        if (this.selectedGraphs.size === 0) {
+            UI.toast('Selecciona al menos un grafo activo', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-auto-scan-plugins');
+        if (btn) UI.setButtonLoading(btn, true);
+
+        let addedCount = 0;
+        // Map: pluginName → Set of graphNames
+        const pluginMap = new Map();
+
+        for (const graphName of this.selectedGraphs) {
+            const config = Storage.getGraph(graphName);
+            if (!config) continue;
+
+            try {
+                const graph = RoamAPI.initGraph(graphName, config.token);
+                const pages = await RoamAPI.getPagesByPrefix(graph, 'roam/js/');
+
+                for (const title of pages) {
+                    // Skip the base "roam/js" page itself
+                    if (title === 'roam/js') continue;
+
+                    if (!pluginMap.has(title)) {
+                        pluginMap.set(title, new Set());
+                    }
+                    pluginMap.get(title).add(graphName);
+                }
+            } catch (error) {
+                console.error(`Error escaneando plugins en ${graphName}:`, error);
+                Storage.addLog('error', `Error escaneando plugins en ${graphName}: ${error.message}`);
+                UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
+            }
+        }
+
+        // Save discovered plugins
+        for (const [pluginName, graphSet] of pluginMap) {
+            const before = Storage.getPlugins().find(p => p.name === pluginName);
+            const beforeCount = before ? before.graphs.length : 0;
+
+            Storage.savePlugin({ name: pluginName, graphs: Array.from(graphSet) });
+
+            const after = Storage.getPlugins().find(p => p.name === pluginName);
+            const afterCount = after ? after.graphs.length : 0;
+
+            if (!before || afterCount > beforeCount) {
+                addedCount++;
+            }
+        }
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '🔍 Escanear Plugins';
+        }
+
+        if (addedCount > 0 || pluginMap.size > 0) {
+            UI.toast(`Escaneo completo: ${pluginMap.size} plugins encontrados, ${addedCount} nuevos/actualizados`, 'success');
+            Storage.addLog('success', `Escaneo plugins: ${pluginMap.size} encontrados, ${addedCount} nuevos/actualizados`);
+            this.refreshPlugins();
+            this.renderLogs();
+        } else {
+            UI.toast('No se encontraron plugins roam/js/', 'info');
+        }
+    },
+
+    /**
+     * Update the live preview when typing code in the sync textarea
+     */
+    updateSyncPreview() {
+        const previewContainer = document.getElementById('sync-preview');
+        const previewContent = document.getElementById('sync-preview-content');
+        const codeTextarea = document.getElementById('sync-code');
+
+        if (!previewContainer || !previewContent || !codeTextarea) return;
+
+        const code = codeTextarea.value.trim();
+
+        if (!code) {
+            previewContainer.style.display = 'none';
+            return;
+        }
+
+        previewContainer.style.display = 'block';
+
+        const plugin = Storage.getPlugins().find(p => p.name === this.selectedPluginName);
+        if (!plugin) return;
+
+        const createMissing = document.getElementById('sync-create-missing')?.checked || false;
+        const allGraphNames = Storage.getGraphNames();
+        const missingGraphs = allGraphNames.filter(g => !plugin.graphs.includes(g));
+
+        const targetGraphs = createMissing ? [...plugin.graphs, ...missingGraphs] : plugin.graphs;
+        const codePreview = code.length > 200 ? code.substring(0, 200) + '...' : code;
+
+        previewContent.innerHTML = `
+            <p><strong>Plugin:</strong> ${UI.escapeHTML(this.selectedPluginName)}</p>
+            <p><strong>Grafos destino (${targetGraphs.length}):</strong></p>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px;">
+                ${targetGraphs.map(g => {
+                    const isMissing = !plugin.graphs.includes(g);
+                    return `<span class="graph-pill" style="font-size: 0.7rem; ${isMissing ? 'border-color: var(--accent-yellow); color: var(--accent-yellow);' : ''}">${UI.escapeHTML(g)}${isMissing ? ' (nuevo)' : ''}</span>`;
+                }).join('')}
+            </div>
+            <p><strong>Estructura:</strong></p>
+            <pre style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px; font-size: 0.8rem; overflow-x: auto; margin-top: 4px;">+ {{[[roam/js]]}}
+  └─ \`\`\`javascript
+     ${UI.escapeHTML(codePreview)}
+     \`\`\`</pre>
+        `;
+    },
+
+    /**
+     * Execute plugin sync across graphs
+     */
+    async executeSyncPlugin() {
+        if (!this.selectedPluginName) {
+            UI.toast('No hay plugin seleccionado', 'error');
+            return;
+        }
+
+        const codeTextarea = document.getElementById('sync-code');
+        const code = codeTextarea?.value?.trim();
+
+        if (!code) {
+            UI.toast('Pega el código del plugin antes de sincronizar', 'error');
+            return;
+        }
+
+        const plugin = Storage.getPlugins().find(p => p.name === this.selectedPluginName);
+        if (!plugin) {
+            UI.toast('Plugin no encontrado', 'error');
+            return;
+        }
+
+        const createMissing = document.getElementById('sync-create-missing')?.checked || false;
+        const allGraphNames = Storage.getGraphNames();
+        const missingGraphs = allGraphNames.filter(g => !plugin.graphs.includes(g));
+        const targetGraphs = createMissing ? [...plugin.graphs, ...missingGraphs] : plugin.graphs;
+
+        // Confirmation
+        const confirmed = await UI.confirm(
+            '🔄 Sincronizar Plugin',
+            `¿Seguro que quieres sincronizar "${this.selectedPluginName}" en ${targetGraphs.length} grafo(s)? Esto reemplazará TODO el contenido existente de la página.`
+        );
+
+        if (!confirmed) return;
+
+        const syncBtn = document.getElementById('btn-execute-sync');
+        if (syncBtn) UI.setButtonLoading(syncBtn, true);
+
+        const results = [];
+
+        for (const graphName of targetGraphs) {
+            const config = Storage.getGraph(graphName);
+            if (!config) {
+                results.push({ graph: graphName, success: false, message: 'Sin configuración' });
+                continue;
+            }
+
+            try {
+                const graph = RoamAPI.initGraph(graphName, config.token);
+                const isNewGraph = !plugin.graphs.includes(graphName);
+
+                const result = await RoamAPI.syncPluginPage(graph, this.selectedPluginName, code, isNewGraph);
+
+                results.push({ graph: graphName, success: result.success, message: result.message });
+
+                if (result.success) {
+                    Storage.addLog('success', `Plugin "${this.selectedPluginName}" sincronizado en ${graphName}`);
+
+                    // If this was a new graph, update the plugin's graph list
+                    if (isNewGraph) {
+                        Storage.savePlugin({ name: this.selectedPluginName, graphs: [graphName] });
+                    }
+                } else {
+                    Storage.addLog('error', `Plugin "${this.selectedPluginName}" falló en ${graphName}: ${result.message}`);
+                }
+            } catch (error) {
+                results.push({ graph: graphName, success: false, message: error.message });
+                Storage.addLog('error', `Error sync plugin en ${graphName}: ${error.message}`);
+            }
+        }
+
+        if (syncBtn) {
+            syncBtn.disabled = false;
+            syncBtn.innerHTML = '🔄 Sincronizar Plugin';
+        }
+
+        UI.showResults(results);
+        this.renderLogs();
+
+        // Clear code and deselect on success
+        const successCount = results.filter(r => r.success).length;
+        if (successCount > 0) {
+            UI.toast(`Plugin sincronizado en ${successCount}/${targetGraphs.length} grafos`, 'success');
+        }
+    },
+
+    /**
+     * Delete a plugin entry from storage
+     * @param {string} id - Plugin ID
+     */
+    async deletePlugin(id) {
+        const confirmed = await UI.confirm(
+            'Eliminar plugin',
+            '¿Seguro que quieres eliminar este plugin del registro? No se eliminará la página de Roam.'
+        );
+
+        if (confirmed) {
+            // If deleted plugin was selected, deselect
+            const plugin = Storage.getPlugins().find(p => p.id === id);
+            if (plugin && plugin.name === this.selectedPluginName) {
+                this.selectedPluginName = null;
+            }
+            Storage.deletePlugin(id);
+            UI.toast('Plugin eliminado del registro', 'info');
+            this.refreshPlugins();
         }
     }
 };

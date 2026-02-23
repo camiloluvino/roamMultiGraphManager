@@ -16,6 +16,7 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 - **Modificar títulos** de páginas existentes.
 - **Eliminar páginas** con confirmación de seguridad.
 - **Preview antes de ejecutar** cada operación.
+- **🔌 Sincronización de Plugins:** Escanea automáticamente todos tus plugins `roam/js/` en los grafos activos, selecciona uno, pega el código nuevo y sincronízalo en todos los grafos con un solo click. Incluye opción para crear el plugin en grafos donde aún no existe.
 
 ## 📋 Requisitos
 
@@ -76,6 +77,17 @@ Para cada grafo que quieras gestionar:
 3. Ingresa el título exacto de la página
 4. Click en **Eliminar Página**
 5. Confirma en el modal de seguridad
+
+### 🔌 Sincronizar Plugins
+
+1. Ve a la pestaña **Plugins**
+2. Click en **🔍 Escanear Plugins** para descubrir todas las páginas `roam/js/*` en tus grafos activos
+3. La tabla mostrará cada plugin con su cobertura (en cuántos grafos existe)
+4. Click en un plugin para seleccionarlo → aparece el panel de sincronización
+5. Pega el código JavaScript actualizado en el textarea
+6. (Opcional) Marca "También crear en grafos donde no existe" si quieres desplegarlo a grafos nuevos
+7. Click en **🔄 Sincronizar Plugin** y confirma
+8. La app reemplazará el contenido en cada grafo con la estructura: `{{[[roam/js]]}}` → ` ```javascript [código] ``` `
 
 ## ⚠️ Notas Importantes
 

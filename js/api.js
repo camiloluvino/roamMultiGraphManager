@@ -255,6 +255,119 @@ const RoamAPI = {
     },
 
     /**
+     * Get pages whose title starts with a given prefix
+     * @param {Object} graph - Graph config
+     * @param {string} prefix - Prefix to match (e.g. "roam/js/")
+     * @returns {Promise<string[]>} Array of page titles
+     */
+    async getPagesByPrefix(graph, prefix) {
+        const query = `[:find ?title :where [?e :node/title ?title]]`;
+        const result = await this.q(graph, query);
+        if (!result || !Array.isArray(result)) return [];
+        return result.map(row => row[0] || '').filter(title => typeof title === 'string' && title.startsWith(prefix));
+    },
+
+    /**
+     * Get direct children blocks of a page by its UID
+     * @param {Object} graph - Graph config
+     * @param {string} pageUid - Page UID
+     * @returns {Promise<Array>} Array of { uid, string, order } objects
+     */
+    async getPageChildren(graph, pageUid) {
+        const result = await this.pull(graph, '[{:block/children [:block/uid :block/string :block/order {:block/children ...}]}]', `[:block/uid "${pageUid}"]`);
+        if (!result || !result[':block/children']) return [];
+        return result[':block/children'].map(child => ({
+            uid: child[':block/uid'],
+            string: child[':block/string'] || '',
+            order: child[':block/order'] || 0,
+            children: child[':block/children'] || []
+        }));
+    },
+
+    /**
+     * Delete a block by UID
+     * @param {Object} graph - Graph config
+     * @param {string} uid - Block UID
+     * @returns {Promise<any>} Response
+     */
+    async deleteBlock(graph, uid) {
+        return this._request(graph, 'write', {
+            action: 'delete-block',
+            block: { uid }
+        });
+    },
+
+    /**
+     * Sync a roam/js plugin page: delete all existing children and create new structure
+     * Structure: parent block "{{[[roam/js]]}}" → child block with code fence
+     * @param {Object} graph - Graph config
+     * @param {string} title - Page title (e.g. "roam/js/myPlugin")
+     * @param {string} code - The JavaScript code to write
+     * @param {boolean} createIfMissing - Create page if it doesn't exist
+     * @returns {Promise<Object>} Result with status
+     */
+    async syncPluginPage(graph, title, code, createIfMissing = false) {
+        // 1. Find page
+        const page = await this.getPageByTitle(graph, title);
+
+        if (!page && !createIfMissing) {
+            return { success: false, message: 'Página no encontrada' };
+        }
+
+        let pageUid;
+
+        if (!page) {
+            // Create the page first
+            pageUid = this.generateUid();
+            await this._request(graph, 'write', {
+                action: 'batch-actions',
+                actions: [{
+                    action: 'create-page',
+                    page: { title, uid: pageUid }
+                }]
+            });
+        } else {
+            pageUid = page[':block/uid'];
+
+            // 2. Get existing children and delete them all
+            const children = await this.getPageChildren(graph, pageUid);
+            if (children.length > 0) {
+                const deleteActions = children.map(child => ({
+                    action: 'delete-block',
+                    block: { uid: child.uid }
+                }));
+                await this._request(graph, 'write', {
+                    action: 'batch-actions',
+                    actions: deleteActions
+                });
+            }
+        }
+
+        // 3. Create new structure: parent block + code child
+        const parentBlockUid = this.generateUid();
+        const childBlockUid = this.generateUid();
+        const codeContent = '```javascript\n' + code + '\n```';
+
+        await this._request(graph, 'write', {
+            action: 'batch-actions',
+            actions: [
+                {
+                    action: 'create-block',
+                    location: { 'parent-uid': pageUid, order: 0 },
+                    block: { string: '{{[[roam/js]]}}', uid: parentBlockUid }
+                },
+                {
+                    action: 'create-block',
+                    location: { 'parent-uid': parentBlockUid, order: 0 },
+                    block: { string: codeContent, uid: childBlockUid }
+                }
+            ]
+        });
+
+        return { success: true, message: page ? 'Plugin sincronizado' : 'Plugin creado y sincronizado' };
+    },
+
+    /**
      * Get recently created pages
      * @param {Object} graph - Graph config
      * @param {number} limit - Max results

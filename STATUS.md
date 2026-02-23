@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.2.2** (Rediseño Pestaña Operaciones: Selector de Grafos Dinámico y Layout 2 Columnas)
+**v0.3.0** (Nueva Pestaña: Plugins - Sincronización Multi-Grafo de roam/js)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -18,22 +18,35 @@
 - 🟢 **Controlador (App):** Sincronización de estados, carga concurrente de actividad y consultas Datalog avanzadas.
 - 🟢 **Componentes (UI):** Renderizado dual (Acordeón/Tabular). Soporte para múltiples tipos de registros manuales.
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
+- 🟢 **🔌 Plugins (NUEVO):** Pestaña dedicada para gestionar y sincronizar plugins `roam/js/` en múltiples grafos simultáneamente.
 
 ## 3. Historial Reciente
-- **REDISEÑO PESTAÑA OPERACIONES (v0.2.2):** Se rediseñó completamente la pestaña de Operaciones con un layout de 2 columnas. Panel izquierdo **sticky** con selector dinámico de grafos (checkboxes generados automáticamente), panel derecho con formularios y preview. Se implementó sincronización bidireccional: cambios en Config ↔ Operaciones se sincronizan automáticamente. Los checkboxes se regeneran cuando se agregan/eliminan grafos. Mejora visual: el selector de grafos ahora es siempre visible y accesible durante la entrada de datos del formulario. Responsive design: en pantallas <1024px el layout se apila verticalmente.
-- **CORRECCIÓN PREVIEW PANEL (v0.2.1):** Se arregló la sección de "Grafos destino" en el preview. Se agregó `flex-wrap: wrap` y mejor espaciado visual para que los nombres de grafos se distribuyan en múltiples líneas cuando hay muchos. Se mejoró la jerarquía visual con fondos, bordes y padding individual para cada grafo.
-- **REDISEÑO FULL-WIDTH Y NAVEGACIÓN (v0.2.0):** Se eliminó la columna lateral (sidebar) para liberar espacio y ampliar el contenido de las pestañas principales. Los componentes que residían en la sidebar fueron reubicados estratégicamente: el **Historial** ahora tiene su propia pestaña de navegación principal, y la lista de **Grafos Activos** se integró en la pestaña de Configuración. Se ajustó el sistema de rejilla CSS para soportar el layout de ancho completo y se optimizó la vista de configuración para manejar tres paneles laterales.
-- **GRAFOS Y CONVERSACIONES (v0.2.1):** Se reorganizó la sección de marcadores en dos categorías distintas: **Grafos** (para páginas terminadas en `/grafoDeDiscurso`) y **Conversaciones** (para páginas terminadas en `/conversacionesChatbots`). Esta división permite un monitoreo más limpio de diferentes flujos de trabajo. Se añadieron botones de **Auto-Escaneo** específicos para cada tipo y se implementó un sistema de almacenamiento independiente en `localStorage` (`roam_mg_conversaciones`). Además, se estableció el **ordenamiento por fecha (descendente)** como el comportamiento predeterminado para todas las tablas de la aplicación (Dashboard, Grafos y Conversaciones).
+- **NUEVA PESTAÑA PLUGINS (v0.3.0):** Se implementó una nueva pestaña principal "Plugins" para resolver el problema de sincronización de complementos `roam/js/` entre múltiples grafos. Funcionalidades:
+  - **Auto-Escaneo de Plugins:** Botón "Escanear Plugins" que busca todas las páginas con prefijo `roam/js/` en los grafos activos y registra cada plugin con la lista de grafos donde existe.
+  - **Tabla de Plugins:** Vista tabular con nombre del plugin, grafos donde está presente, y badge de cobertura (X/N grafos).
+  - **Sincronización de Código:** Al seleccionar un plugin, aparece un panel con textarea monospace para pegar código JavaScript nuevo. La sincronización elimina todo el contenido existente de la página y lo reemplaza con la estructura correcta de Roam: `{{[[roam/js]]}}` → bloque hijo con code fence.
+  - **Creación en grafos faltantes:** Opción checkbox para también crear el plugin en grafos donde no existe aún.
+  - **Preview en tiempo real:** Al escribir código se muestra preview con grafos destino y estructura que se escribirá.
+  - **Confirmación de seguridad:** Modal de confirmación antes de ejecutar (ya que reemplaza contenido existente).
+  - **Resultados detallados:** Modal de resultados por grafo (éxito/error) como en las demás operaciones.
+  - **Persistencia:** Los plugins descubiertos se guardan en `localStorage` (`roam_mg_plugins`).
+  - **Nuevos métodos API:** `getPagesByPrefix()`, `getPageChildren()`, `deleteBlock()`, `syncPluginPage()`.
+- **REDISEÑO PESTAÑA OPERACIONES (v0.2.2):** Se rediseñó completamente la pestaña de Operaciones con un layout de 2 columnas. Panel izquierdo **sticky** con selector dinámico de grafos (checkboxes generados automáticamente), panel derecho con formularios y preview. Se implementó sincronización bidireccional: cambios en Config ↔ Operaciones se sincronizan automáticamente.
+- **CORRECCIÓN PREVIEW PANEL (v0.2.1):** Se arregló la sección de "Grafos destino" en el preview. Se agregó `flex-wrap: wrap` y mejor espaciado visual.
+- **REDISEÑO FULL-WIDTH Y NAVEGACIÓN (v0.2.0):** Se eliminó la columna lateral (sidebar) para liberar espacio y ampliar el contenido de las pestañas principales.
 
 ## 4. Problemas Conocidos (Bugs / TODOs)
 - **Limitación en UI:** Si falla un event listener por un ID que no se encuentra en el HTML en `app.js`, la consola arrojará error pero la interfaz no dará feedback visible.
 - **Riesgo:** Los tokens se guardan en texto plano en localStorage; si bien se mitigo XSS básico, extensiones maliciosas siguen siendo un vector de ataque.
 - **Limitación:** Las operaciones sobre múltiples grafos fallan en modo "todo o nada".
+- **Plugins:** El escaneo de plugins requiere grafos activos seleccionados. Si no hay ninguno seleccionado, no se puede escanear.
 
 ## 5. Próximos Pasos Recomendados
 1. Implementar un "Dry-run" de conexión con la API la primera vez que inicia la app para marcar de color rojo tokens inválidos o caducados.
 2. Añadir un sistema de "Deshacer" básico (ej. si se creó una página en 10 grafos y uno quiere revertir la acción).
 3. Mejorar visibilidad del estado de los grafos (ej. indicador de conexión exitosa/fallida junto a cada grafo en el selector).
+4. Añadir opción de leer código desde un grafo fuente (complemento al textarea manual) para los plugins.
+5. Soporte para plugins con estructura más compleja (múltiples bloques hijos, no solo código).
 
 ---
 

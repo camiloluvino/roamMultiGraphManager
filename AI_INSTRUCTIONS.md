@@ -15,7 +15,7 @@ La aplicación sigue un patrón modular basado en **ES Modules**:
 - `js/app.js` (`App`): El controlador principal. Importa `Storage`, `RoamAPI` y `UI`.
 - `ui.js` (`UI`): Capa de presentación abstracta. Contiene funciones puras de manipulación del DOM, modales, toasts y renderizado condicional.
 - `api.js` (`RoamAPI`): Wrapper para la comunicación HTTP/WebSocket con la API de Roam Research.
-- `storage.js` (`Storage`): Abstracción sobre `localStorage` para la persistencia de tokens de API y el registro (logs) de operaciones de manera segura.
+- `storage.js` (`Storage`): Abstracción sobre `localStorage` para la persistencia de tokens de API, registro (logs), y datos de plugins/registros/conversaciones.
 
 ## 4. Decisiones de Diseño
 - **Vanilla web tech:** Se optó por cero dependencias de npm para mantener el despliegue trivial y la accesibilidad máxima sin curva de compilación.
@@ -49,3 +49,11 @@ La aplicación sigue un patrón modular basado en **ES Modules**:
 - **Acoplamiento de selectores DOM:** `app.js` depende de IDs de HTML. Si cambias `index.html`, audita las referencias en `app.js`.
 - **Asincronicidad de API:** Operar en múltiples grafos puede ser lento. Siempre usa `UI.setButtonLoading()` y bloques `finally` para no bloquear la interfaz permanentemente ante fallos.
 - **Límites de Almacenamiento:** `Storage` tiene un límite de 100 logs para evitar saturar el `localStorage` del navegador.
+
+## 8. Sistema de Plugins (roam/js)
+La pestaña **Plugins** permite sincronizar complementos `roam/js/` entre múltiples grafos:
+- **Estructura de un plugin en Roam:** Página `roam/js/nombrePlugin` → bloque padre `{{[[roam/js]]}}` → bloque hijo con code fence ` ```javascript ... ``` `.
+- **Flujo de sincronización:** `syncPluginPage()` en `api.js` busca la página, elimina todos los bloques hijos existentes con `batch-actions` (delete-block), y crea la nueva estructura con `batch-actions` (create-block).
+- **Almacenamiento:** Los plugins se persisten en `localStorage` key `roam_mg_plugins`. Cada plugin guarda su nombre (título de página) y la lista de grafos donde existe.
+- **Auto-escaneo:** `getPagesByPrefix(graph, 'roam/js/')` busca todas las páginas con ese prefijo y registra cada una con sus grafos.
+- **IDs DOM clave:** `plugins-content`, `plugin-sync-panel`, `sync-code`, `sync-create-missing`, `sync-preview`, `btn-auto-scan-plugins`, `btn-execute-sync`, `btn-cancel-sync`.

@@ -38,6 +38,9 @@
           <button class="nav-btn" data-view="conversaciones">
             Conversaciones
           </button>
+          <button class="nav-btn" data-view="plugins">
+            Plugins
+          </button>
           <button class="nav-btn" data-view="operations">
             Operaciones
           </button>
@@ -160,6 +163,28 @@
 
           <div id="conversaciones-content" class="dashboard-content">
             <!-- List of stored manual registers for conversaciones -->
+          </div>
+        </div>
+
+        <!-- Plugins View -->
+        <div id="view-plugins" class="main-view">
+          <div class="dashboard-header">
+            <h2>🔌 Plugins (roam/js)</h2>
+            <div class="dashboard-filters">
+              <button id="btn-auto-scan-plugins" class="btn btn-secondary">🔍 Escanear Plugins</button>
+            </div>
+          </div>
+
+          <!-- Plugin List -->
+          <div id="plugins-content" class="dashboard-content">
+            <!-- Plugin list rendered by JS -->
+          </div>
+
+          <!-- Sync Panel (appears when plugin is selected) -->
+          <div id="plugin-sync-panel" class="card" style="margin-top: var(--spacing-lg);">
+            <div class="empty-state" style="padding: var(--spacing-lg);">
+              <p class="hint">Selecciona un plugin de la lista para sincronizarlo.</p>
+            </div>
           </div>
         </div>
 

@@ -9,7 +9,8 @@ const Storage = {
         LOGS: 'roam_mg_logs',
         SELECTED_GRAPHS: 'roam_mg_selected',
         REGISTROS: 'roam_mg_registros',
-        CONVERSACIONES: 'roam_mg_conversaciones'
+        CONVERSACIONES: 'roam_mg_conversaciones',
+        PLUGINS: 'roam_mg_plugins'
     },
 
     MAX_LOGS: 100,
@@ -267,6 +268,83 @@ const Storage = {
             localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
         } catch (e) {
             console.error('Error saving conversaciones after delete', e);
+        }
+    },
+
+    /**
+     * Get all registered plugins
+     * Each plugin: { id, name (page title), graphs: [graphName, ...], addedAt }
+     * @returns {Array} Array of plugin objects
+     */
+    getPlugins() {
+        try {
+            const data = localStorage.getItem(this.KEYS.PLUGINS);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Error reading plugins from storage', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save a new plugin entry (unique by name)
+     * @param {Object} data - { name, graphs: [graphName, ...] }
+     */
+    savePlugin(data) {
+        const plugins = this.getPlugins();
+        // Check if already exists by name
+        const existing = plugins.find(p => p.name === data.name);
+        if (existing) {
+            // Merge graphs (add new ones without duplicates)
+            const graphSet = new Set([...existing.graphs, ...data.graphs]);
+            existing.graphs = Array.from(graphSet);
+            existing.updatedAt = new Date().toISOString();
+        } else {
+            plugins.push({
+                id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+                name: data.name,
+                graphs: data.graphs || [],
+                addedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+        }
+        try {
+            localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
+        } catch (e) {
+            console.error('Error saving plugins to storage', e);
+        }
+    },
+
+    /**
+     * Update graphs list for a plugin
+     * @param {string} name - Plugin page title
+     * @param {string[]} graphs - Updated graphs array
+     */
+    updatePluginGraphs(name, graphs) {
+        const plugins = this.getPlugins();
+        const plugin = plugins.find(p => p.name === name);
+        if (plugin) {
+            plugin.graphs = graphs;
+            plugin.updatedAt = new Date().toISOString();
+            try {
+                localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
+            } catch (e) {
+                console.error('Error updating plugin graphs', e);
+            }
+        }
+    },
+
+    /**
+     * Delete a plugin entry
+     * @param {string} id - Plugin ID
+     */
+    deletePlugin(id) {
+        let plugins = this.getPlugins();
+        plugins = plugins.filter(p => p.id !== id);
+        try {
+            localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
+        } catch (e) {
+            console.error('Error saving plugins after delete', e);
         }
     }
 };
