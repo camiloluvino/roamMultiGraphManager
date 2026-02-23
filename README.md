@@ -40,12 +40,12 @@ Para cada grafo que quieras gestionar:
 
 ### 2. Configurar y Activar Grafos
 
-1. Ejecuta `iniciar.bat` (doble click) para iniciar el servidor local
-2. Se abrirá automáticamente el navegador con la app en `http://localhost:8000`
-3. Ve a la pestaña **⚙️ Configuración**.
-4. En el panel izquierdo, ingresa el nombre del grafo y su API Token, luego click en **Agregar Grafo**.
-5. En el panel central (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
-6. Los grafos seleccionados aparecerán en el panel derecho (**Grafos Activos**) para confirmar tu selección antes de operar.
+1. Crea un archivo `config.local.js` en la raíz del proyecto con tus grafos (ver instrucciones abajo)
+2. Ejecuta `iniciar.bat` (doble click) para iniciar el servidor local
+3. Se abrirá automáticamente el navegador con la app en `http://localhost:8000`
+4. Ve a la pestaña **⚙️ Configuración**.
+5. En la columna **Tus Grafos**, marca los checkboxes de los grafos que quieras activar.
+6. Los grafos seleccionados aparecerán en la columna **Grafos Activos** para confirmar tu selección antes de operar.
 
 
 ### 3. Registrar Páginas de Interés (Manual o Auto)
@@ -145,7 +145,7 @@ const LOCAL_CONFIG = {
 
 3. Los grafos se cargarán automáticamente al abrir la aplicación
 
-> **Nota:** Si no existe `config.local.js`, la aplicación funcionará normalmente pero sin grafos precargados. Podrás agregar grafos manualmente desde la pestaña de Configuración.
+> **Nota:** Si no existe `config.local.js`, la aplicación funcionará pero sin grafos precargados. Deberás crear el archivo para agregar tus grafos.
 
 ## 🔗 Referencias
 

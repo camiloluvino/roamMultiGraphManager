@@ -214,12 +214,6 @@ const App = {
             }
         });
 
-        // Add graph form
-        document.getElementById('add-graph-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addGraph();
-        });
-
         // All graphs list interactions (Config Tab)
         document.getElementById('all-graph-list')?.addEventListener('click', (e) => {
             const graphItem = e.target.closest('.graph-item');
@@ -594,60 +588,6 @@ const App = {
         }
         if (allContainer) {
             UI.renderAllGraphsList(allContainer, graphs, this.selectedGraphs);
-        }
-    },
-
-    /**
-     * Add a new graph
-     */
-    async addGraph() {
-        const nameInput = document.getElementById('graph-name');
-        const tokenInput = document.getElementById('graph-token');
-        const submitBtn = document.querySelector('#add-graph-form button[type="submit"]');
-
-        const name = nameInput.value.trim();
-        const token = tokenInput.value.trim();
-
-        if (!name || !token) {
-            UI.toast('Ingresa nombre y token del grafo', 'error');
-            return;
-        }
-
-        // Check if already exists
-        if (Storage.getGraph(name)) {
-            UI.toast(`El grafo "${name}" ya existe`, 'error');
-            return;
-        }
-
-        UI.setButtonLoading(submitBtn, true);
-
-        try {
-            // Test connection
-            const graph = RoamAPI.initGraph(name, token);
-            const connected = await RoamAPI.testConnection(graph);
-
-            // Save graph
-            Storage.saveGraph(name, token);
-            Storage.updateGraphStatus(name, connected ? 'connected' : 'error');
-            Storage.addLog(
-                connected ? 'success' : 'error',
-                `Grafo "${name}" ${connected ? 'agregado y conectado' : 'agregado (error de conexión)'}`
-            );
-
-            // Clear form and reload
-            nameInput.value = '';
-            tokenInput.value = '';
-            this.loadGraphs();
-            this.renderLogs();
-
-            UI.toast(
-                connected ? `Grafo "${name}" agregado correctamente` : `Grafo agregado pero hay error de conexión`,
-                connected ? 'success' : 'warning'
-            );
-        } catch (error) {
-            UI.toast(`Error: ${error.message}`, 'error');
-        } finally {
-            UI.setButtonLoading(submitBtn, false);
         }
     },
 
@@ -1130,115 +1070,7 @@ const App = {
     },
 
     /**
-     * Auto scan configured active graphs for /conversacionesChatbots
-     */
-    async autoScanConversaciones() {
-        if (this.selectedGraphs.size === 0) {
-            UI.toast('Selecciona al menos un grafo activo', 'warning');
-            return;
-        }
-
-        const btn = document.getElementById('btn-auto-scan-conversaciones');
-        if (btn) UI.setButtonLoading(btn, true);
-
-        let addedCount = 0;
-        const currentConversaciones = Storage.getConversaciones();
-        const existingSet = new Set(currentConversaciones.map(r => `${r.graph}::${r.title}`));
-
-        for (const graphName of this.selectedGraphs) {
-            const config = Storage.getGraph(graphName);
-            if (!config) continue;
-
-            try {
-                const graph = RoamAPI.initGraph(graphName, config.token);
-                const pages = await RoamAPI.getPagesBySuffix(graph, '/conversacionesChatbots');
-
-                for (const title of pages) {
-                    const key = `${graphName}::${title}`;
-                    if (!existingSet.has(key)) {
-                        Storage.saveConversacion({ graph: graphName, title });
-                        existingSet.add(key);
-                        addedCount++;
-                    }
-                }
-            } catch (error) {
-                console.error(`Error escaneando ${graphName}:`, error);
-                Storage.addLog('error', `Error escaneando ${graphName}: ${error.message}`);
-                UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
-            }
-        }
-
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '🔍 Auto-Escanear "/conversacionesChatbots"';
-        }
-
-        if (addedCount > 0) {
-            UI.toast(`Se agregaron ${addedCount} nuevas conversaciones automáticamente`, 'success');
-            Storage.addLog('success', `Auto-escaneo: ${addedCount} conversaciones agregadas`);
-            this.refreshConversaciones();
-            this.renderLogs();
-        } else {
-            UI.toast('No se encontraron nuevas conversaciones', 'info');
-        }
-    },
-
-    /**
-     * Delete manual conversacion
-     */
-    async deleteConversacion(id) {
-        const confirmed = await UI.confirm(
-            'Eliminar conversación',
-            '¿Seguro que quieres eliminar este marcador? La página no se borrará de Roam.'
-        );
-
-        if (confirmed) {
-            Storage.deleteConversacion(id);
-            UI.toast('Conversación eliminada', 'info');
-            this.refreshConversaciones();
-        }
-    },
-
-    // =============================================
-    // PLUGINS MANAGEMENT
-    // =============================================
-
-    /**
-     * Toggle all plugin graphs selection
-     * @param {boolean} selectAll - Whether to select all
-     */
-    toggleAllPluginGraphs(selectAll) {
-        const checkboxes = document.querySelectorAll('#plugin-graphs-checkboxes .plugin-graph-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = selectAll;
-        });
-    },
-
-    /**
-     * Render plugin selector dropdown
-     */
-    renderPluginSelector() {
-        const selector = document.getElementById('plugin-selector');
-        if (!selector) return;
-
-        const plugins = Storage.getPlugins();
-        
-        if (plugins.length === 0) {
-            selector.innerHTML = '<option value="">-- No hay plugins --</option>';
-            return;
-        }
-
-        selector.innerHTML = '<option value="">-- Selecciona un plugin --</option>' +
-            plugins.map(p => `<option value="${CSS.escape(p.name)}">🔌 ${UI.escapeHTML(p.name)} (${p.graphs.length} grafos)</option>`).join('');
-        
-        // Restore selection if exists
-        if (this.selectedPluginName) {
-            selector.value = this.selectedPluginName;
-        }
-    },
-
-    /**
-     * Render plugin info (when selected) - simplified: name + radio for active sync
+     * Remove a graph
      */
     renderPluginInfo() {
         const container = document.getElementById('plugin-info');
