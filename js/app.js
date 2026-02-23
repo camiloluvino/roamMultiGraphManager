@@ -1371,11 +1371,9 @@ const App = {
         const plugin = Storage.getPlugins().find(p => p.name === this.selectedPluginName);
         if (!plugin) return;
 
-        const createMissing = document.getElementById('sync-create-missing')?.checked || false;
-        const allGraphNames = Storage.getGraphNames();
-        const missingGraphs = allGraphNames.filter(g => !plugin.graphs.includes(g));
-
-        const targetGraphs = createMissing ? [...plugin.graphs, ...missingGraphs] : plugin.graphs;
+        // Use manually checked graphs from UI
+        const checkboxes = document.querySelectorAll('.plugin-graph-checkbox:checked');
+        const targetGraphs = Array.from(checkboxes).map(cb => cb.dataset.graph);
         const codePreview = code.length > 200 ? code.substring(0, 200) + '...' : code;
 
         previewContent.innerHTML = `
@@ -1418,10 +1416,14 @@ const App = {
             return;
         }
 
-        const createMissing = document.getElementById('sync-create-missing')?.checked || false;
-        const allGraphNames = Storage.getGraphNames();
-        const missingGraphs = allGraphNames.filter(g => !plugin.graphs.includes(g));
-        const targetGraphs = createMissing ? [...plugin.graphs, ...missingGraphs] : plugin.graphs;
+        // Use manually checked graphs from UI
+        const checkboxes = document.querySelectorAll('.plugin-graph-checkbox:checked');
+        const targetGraphs = Array.from(checkboxes).map(cb => cb.dataset.graph);
+
+        if (targetGraphs.length === 0) {
+            UI.toast('Selecciona al menos un grafo destino', 'error');
+            return;
+        }
 
         // Confirmation
         const confirmed = await UI.confirm(
