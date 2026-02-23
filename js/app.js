@@ -25,6 +25,18 @@ const App = {
         this.renderLogs();
         this.setActiveTab('create');
         this.renderGraphCheckboxes();
+        this.setupAutoShutdown();
+    },
+
+    /**
+     * Setup auto-shutdown listener using a heartbeat (ping) mechanism
+     */
+    setupAutoShutdown() {
+        // Enviar un "latido" al servidor cada 2 segundos.
+        // Si el servidor deja de recibir estos latidos durante 5 segundos (porque cerraste la pestaña), se auto-apagará.
+        setInterval(() => {
+            fetch('/heartbeat', { cache: 'no-store' }).catch(() => { });
+        }, 2000);
     },
 
     /**

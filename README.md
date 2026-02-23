@@ -17,6 +17,7 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 - **Eliminar páginas** con confirmación de seguridad.
 - **Preview antes de ejecutar** cada operación.
 - **🔌 Sincronización de Plugins:** Escanea automáticamente todos tus plugins `roam/js/` en los grafos activos, selecciona uno, pega el código nuevo y sincronízalo en todos los grafos con un solo click. Incluye opción para crear el plugin en grafos donde aún no existe.
+- **🛡️ Auto-Shutdown Inteligente:** El servidor local se cierra automáticamente entre 2 y 5 segundos después de que cierras la pestaña del navegador, manteniendo tu escritorio limpio de terminales huérfanas.
 
 ## 📋 Requisitos
 
@@ -122,6 +123,7 @@ roamMultiGraphManager/
 │   ├── storage.js     # Gestión de tokens/logs
 │   └── ui.js          # Componentes de UI
 └── README.md          # Este archivo
+├── server.py          # Servidor personalizado con auto-shutdown
 ```
 
 ## 🔐 Configuración Local (Tokens de API)

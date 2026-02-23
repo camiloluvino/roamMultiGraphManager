@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.3.1** (Hotfix: 3 Bugs Críticos)
+**v0.4.0** (Nueva Característica: Auto-Shutdown)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -18,9 +18,15 @@
 - 🟢 **Controlador (App):** Sincronización de estados, carga concurrente de actividad y consultas Datalog avanzadas.
 - 🟢 **Componentes (UI):** Renderizado dual (Acordeón/Tabular). Soporte para múltiples tipos de registros manuales.
 - 🟢 **Gestión de Almacenamiento:** Sin cambios (localStorage).
-- 🟢 **🔌 Plugins (NUEVO):** Pestaña dedicada para gestionar y sincronizar plugins `roam/js/` en múltiples grafos simultáneamente.
+- 🟢 **🔌 Plugins:** Pestaña dedicada para gestionar y sincronizar plugins `roam/js/` en múltiples grafos simultáneamente.
+- 🟢 **Auto-Shutdown (NUEVO):** Cierre automático de la terminal (servidor local) al cerrar la pestaña del navegador mediante sistema de heartbeat.
 
 ## 3. Historial Reciente
+- **AUTO-SHUTDOWN RELIABLE (v0.4.0):** Se sustituyó el servidor genérico de Python por uno personalizado para mejorar la experiencia de usuario:
+  - **Mecanismo Heartbeat:** Implementación de un sistema de "latido" donde la app avisa al servidor que sigue activa cada 2 segundos.
+  - **Cierre Automático:** Si el servidor deja de recibir latidos por más de 5 segundos (ej. al cerrar la pestaña), se apaga automáticamente, liberando la consola.
+  - **Server.py:** Nuevo script `server.py` que centraliza la lógica del servidor y silencia los logs de heartbeat para mantener la consola limpia.
+  - **Update Iniciar.bat:** Se actualizó el acceso directo para usar el nuevo servidor.
 - **HOTFIX: 3 BUGS CRÍTICOS (v0.3.1):** Tras una revisión integral de código, se corrigieron tres errores que afectaban la usabilidad:
   - **Arreglo en Sort Dashboard:** Se corrigió un error de sintaxis en `app.js` que impedía que el ordenamiento de columnas alternara entre ascendente y descendente.
   - **Funciones Faltantes:** Se implementaron `autoScanConversaciones()` y `toggleAllPluginGraphs()` que estaban siendo llamadas pero no existían, eliminando crashes al usarlas.
