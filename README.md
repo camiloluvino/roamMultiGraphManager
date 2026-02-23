@@ -82,12 +82,13 @@ Para cada grafo que quieras gestionar:
 
 1. Ve a la pestaña **Plugins**
 2. Click en **🔍 Escanear Plugins** para descubrir todas las páginas `roam/js/*` en tus grafos activos
-3. La tabla mostrará cada plugin con su cobertura (en cuántos grafos existe)
-4. Click en un plugin para seleccionarlo → aparece el panel de sincronización
-5. Pega el código JavaScript actualizado en el textarea
-6. (Opcional) Marca "También crear en grafos donde no existe" si quieres desplegarlo a grafos nuevos
-7. Click en **🔄 Sincronizar Plugin** y confirma
-8. La app reemplazará el contenido en cada grafo con la estructura: `{{[[roam/js]]}}` → ` ```javascript [código] ``` `
+3. En la lista de **Plugins Descubiertos** (abajo), marca los plugins que quieres sincronizar usando los checkboxes
+4. Los plugins seleccionados aparecerán en la columna izquierda **Plugin Seleccionado** con su información
+5. En la columna **Grafos Destino**, selecciona los grafos donde quieres sincronizar (o usa el botón ☑ para seleccionar todos)
+6. Pega el código JavaScript actualizado en el textarea de la columna **Código JavaScript**
+7. (Opcional) Marca "Crear en grafos faltantes" si quieres crear el plugin en grafos donde no existe
+8. Click en **🔄 Sincronizar Plugin** y confirma
+9. La app reemplazará el contenido en cada grafo con la estructura: `{{[[roam/js]]}}` → ` ```javascript [código] ``` `
 
 ## ⚠️ Notas Importantes
 

@@ -2,7 +2,7 @@ const App = {
     selectedGraphs: new Set(),
     currentOperation: 'create',
     currentView: 'dashboard', // default top-level view
-    selectedPluginName: null, // currently selected plugin for sync
+    selectedPlugins: new Set(), // multiple selected plugins for sync
 
     // Sort states
     dashboardSort: { column: 'time', direction: 'desc' },
@@ -378,18 +378,30 @@ const App = {
             this.autoScanPlugins();
         });
 
-        // Plugin list: select plugin or delete
+        // Select all/none for plugins graphs
+        document.getElementById('btn-select-all-plugins')?.addEventListener('click', () => {
+            this.toggleAllPluginGraphs(true);
+        });
+
+        // Plugin sync button
+        document.getElementById('btn-execute-sync')?.addEventListener('click', () => {
+            this.executeSyncPlugin();
+        });
+
+        // Plugin list: checkbox change or delete
+        document.getElementById('plugins-content')?.addEventListener('change', (e) => {
+            if (e.target.classList.contains('plugin-checkbox')) {
+                const pluginName = e.target.dataset.pluginName;
+                this.togglePluginSelection(pluginName, e.target.checked);
+                return;
+            }
+        });
+
         document.getElementById('plugins-content')?.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.btn-delete-plugin');
             if (deleteBtn) {
                 e.stopPropagation();
                 this.deletePlugin(deleteBtn.dataset.id);
-                return;
-            }
-            const pluginItem = e.target.closest('.plugin-item');
-            if (pluginItem) {
-                const pluginName = pluginItem.dataset.pluginName;
-                this.selectPlugin(pluginName);
             }
         });
 
@@ -1192,38 +1204,185 @@ const App = {
     // =============================================
 
     /**
-     * Refresh plugins view: render list and sync panel
+     * Toggle all plugin graphs selection
+     * @param {boolean} selectAll - Whether to select all
+     */
+    toggleAllPluginGraphs(selectAll) {
+        const checkboxes = document.querySelectorAll('#plugin-graphs-checkboxes .plugin-graph-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll;
+        });
+    },
+
+    /**
+     * Render plugin selector dropdown
+     */
+    renderPluginSelector() {
+        const selector = document.getElementById('plugin-selector');
+        if (!selector) return;
+
+        const plugins = Storage.getPlugins();
+        
+        if (plugins.length === 0) {
+            selector.innerHTML = '<option value="">-- No hay plugins --</option>';
+            return;
+        }
+
+        selector.innerHTML = '<option value="">-- Selecciona un plugin --</option>' +
+            plugins.map(p => `<option value="${CSS.escape(p.name)}">🔌 ${UI.escapeHTML(p.name)} (${p.graphs.length} grafos)</option>`).join('');
+        
+        // Restore selection if exists
+        if (this.selectedPluginName) {
+            selector.value = this.selectedPluginName;
+        }
+    },
+
+    /**
+     * Render plugin info (when selected) - supports multiple plugins
+     */
+    renderPluginInfo() {
+        const container = document.getElementById('plugin-info');
+        if (!container) return;
+
+        if (this.selectedPlugins.size === 0) {
+            container.innerHTML = '<p class="hint">Selecciona plugins de la lista de abajo (checkbox)</p>';
+            return;
+        }
+
+        const plugins = Storage.getPlugins().filter(p => this.selectedPlugins.has(p.name));
+        
+        if (plugins.length === 0) {
+            container.innerHTML = '<p class="hint">Plugin no encontrado</p>';
+            return;
+        }
+
+        // Show info for all selected plugins
+        let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+        
+        for (const plugin of plugins) {
+            const allGraphNames = Storage.getGraphNames();
+            const missingGraphs = allGraphNames.filter(g => !plugin.graphs.includes(g));
+            
+            html += `
+                <div style="padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                    <p style="font-weight: 600; color: var(--accent-purple);">🔌 ${UI.escapeHTML(plugin.name)}</p>
+                    <p style="margin-top: 8px;"><strong>Presente en (${plugin.graphs.length}):</strong></p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px;">
+                        ${plugin.graphs.length > 0 ? plugin.graphs.map(g => `<span class="graph-pill">${UI.escapeHTML(g)}</span>`).join('') : '<span class="hint">Ninguno</span>'}
+                    </div>
+                    ${missingGraphs.length > 0 ? `
+                        <p style="color: var(--accent-yellow); margin-top: var(--spacing-sm);"><strong>Falta en (${missingGraphs.length}):</strong></p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            ${missingGraphs.map(g => `<span class="graph-pill" style="border-color: var(--accent-yellow);">${UI.escapeHTML(g)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        
+        // Add "create in missing" checkbox if any plugin has missing graphs
+        const hasMissing = plugins.some(p => {
+            const allGraphNames = Storage.getGraphNames();
+            const missing = allGraphNames.filter(g => !p.graphs.includes(g));
+            return missing.length > 0;
+        });
+        
+        if (hasMissing) {
+            html += `
+                <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+                    <input type="checkbox" id="sync-create-missing">
+                    <span style="font-size: 0.8rem;">Crear en grafos faltantes</span>
+                </label>
+            `;
+        }
+
+        container.innerHTML = html;
+    },
+
+    /**
+     * Render graph checkboxes in plugins panel (compact)
+     */
+    renderPluginGraphCheckboxes() {
+        const container = document.getElementById('plugin-graphs-checkboxes');
+        if (!container) return;
+
+        const allGraphs = Storage.getGraphs();
+        const graphNames = Object.keys(allGraphs).sort();
+
+        if (graphNames.length === 0) {
+            container.innerHTML = '<p class="hint">No hay grafos configurados</p>';
+            return;
+        }
+
+        container.innerHTML = graphNames.map(graphName => `
+            <label>
+                <input 
+                    type="checkbox" 
+                    class="plugin-graph-checkbox" 
+                    data-graph="${CSS.escape(graphName)}"
+                >
+                <span class="graph-label-text">${UI.escapeHTML(graphName)}</span>
+            </label>
+        `).join('');
+    },
+
+    /**
+     * Refresh plugins view - 3-column layout
      */
     refreshPlugins() {
         const container = document.getElementById('plugins-content');
-        const syncPanel = document.getElementById('plugin-sync-panel');
+        
         if (!container) return;
 
         const plugins = Storage.getPlugins();
         const totalGraphs = Storage.getGraphNames().length;
 
-        UI.renderPlugins(container, plugins, totalGraphs, this.selectedPluginName);
+        // Render full plugin list (bottom) with multi-select checkboxes
+        UI.renderPlugins(container, plugins, totalGraphs, this.selectedPlugins);
 
-        // Render sync panel
-        if (syncPanel) {
-            const selectedPlugin = plugins.find(p => p.name === this.selectedPluginName);
-            const allGraphNames = Storage.getGraphNames();
-            UI.renderPluginSyncPanel(syncPanel, selectedPlugin || null, totalGraphs, allGraphNames);
-        }
+        // Render plugin info (shows all selected plugins)
+        this.renderPluginInfo();
+
+        // Render graph checkboxes
+        this.renderPluginGraphCheckboxes();
     },
 
     /**
-     * Select a plugin for syncing
-     * @param {string} pluginName - Plugin page title
+     * Update the code textarea when a plugin is selected
      */
-    selectPlugin(pluginName) {
-        // Toggle selection
-        if (this.selectedPluginName === pluginName) {
-            this.selectedPluginName = null;
-        } else {
-            this.selectedPluginName = pluginName;
+    updatePluginCodeTextarea() {
+        const codeTextarea = document.getElementById('sync-code');
+        if (!codeTextarea) return;
+
+        if (!this.selectedPluginName) {
+            codeTextarea.value = '';
+            return;
         }
-        this.refreshPlugins();
+
+        const plugin = Storage.getPlugins().find(p => p.name === this.selectedPluginName);
+        if (!plugin) return;
+
+        // Could optionally load existing code from one of the graphs
+        // For now just show placeholder
+        codeTextarea.placeholder = `Editando: ${plugin.name}\nPega el código actualizado aquí...`;
+    },
+
+    /**
+     * Toggle plugin selection (for multi-select with checkboxes)
+     * @param {string} pluginName - Plugin name
+     * @param {boolean} selected - Selection state
+     */
+    togglePluginSelection(pluginName, selected) {
+        if (selected) {
+            this.selectedPlugins.add(pluginName);
+        } else {
+            this.selectedPlugins.delete(pluginName);
+        }
+        
+        // Update plugin info column with all selected plugins
+        this.renderPluginInfo();
     },
 
     /**

@@ -1152,3 +1152,57 @@ h3 {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
 }
+
+/* Plugins Main Grid Layout - 3 columns */
+.plugins-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .plugins-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Compact graphs list for plugins */
+.graphs-list.compact {
+  max-height: 150px;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Tall graphs list for plugins */
+.graphs-list.tall {
+  max-height: 350px;
+  margin-bottom: var(--spacing-md);
+}
+
+.plugin-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.plugin-list .plugin-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.plugin-list .plugin-item:hover {
+  background: var(--bg-secondary);
+}
+
+.plugin-list .plugin-item.plugin-selected {
+  background: rgba(108, 92, 153, 0.1);
+  border-color: var(--accent-purple);
+}

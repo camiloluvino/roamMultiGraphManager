@@ -658,19 +658,19 @@ const UI = {
     },
 
     /**
-     * Render plugins list with coverage info
+     * Render plugins list - MULTI-SELECT with checkboxes
      * @param {HTMLElement} container - Container element
      * @param {Array} plugins - Array of plugin objects
      * @param {number} totalGraphs - Total number of active graphs
-     * @param {string|null} selectedPlugin - Currently selected plugin name
+     * @param {Set} selectedPluginNames - Set of selected plugin names
      */
-    renderPlugins(container, plugins, totalGraphs, selectedPlugin = null) {
+    renderPlugins(container, plugins, totalGraphs, selectedPluginNames = new Set()) {
         if (!plugins || plugins.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon">🔌</div>
-                    <p>No hay plugins registrados aún.</p>
-                    <p class="hint">Usa "Escanear Plugins" para descubrir páginas roam/js/ en tus grafos.</p>
+                <div class="empty-state" style="padding: var(--spacing-lg);">
+                    <div class="icon" style="font-size: 1.5rem;">🔌</div>
+                    <p style="font-size: 0.9rem;">No hay plugins registrados</p>
+                    <p class="hint" style="font-size: 0.8rem;">Usa "Escanear Plugins" para descubrir páginas roam/js/</p>
                 </div>
             `;
             return;
@@ -678,107 +678,30 @@ const UI = {
 
         const listHTML = plugins.map(plugin => {
             const graphCount = plugin.graphs.length;
-            const coveragePercent = totalGraphs > 0 ? Math.round((graphCount / totalGraphs) * 100) : 0;
-            const isSelected = selectedPlugin === plugin.name;
+            const isSelected = selectedPluginNames.has(plugin.name);
             const coverageBadgeClass = graphCount === totalGraphs ? 'badge-success' : (graphCount > 0 ? 'badge-pending' : 'badge-error');
 
             return `
-                <div class="activity-item plugin-item ${isSelected ? 'plugin-selected' : ''}" data-plugin-name="${this.escapeHTML(plugin.name)}" style="cursor: pointer; grid-template-columns: minmax(250px, 2fr) 200px 120px 80px;">
-                    <div class="cell-content">
-                        <span class="title-text" style="font-size: 0.95rem; ${isSelected ? 'color: var(--accent-purple); font-weight: 600;' : ''}" title="${this.escapeHTML(plugin.name)}">
-                            🔌 ${this.escapeHTML(plugin.name)}
-                        </span>
-                    </div>
-                    <div>
-                        <span class="snippet-text" style="border: none; padding: 0;">
-                            ${plugin.graphs.map(g => `<span class="graph-pill" style="margin-right: 4px; font-size: 0.7rem;">${this.escapeHTML(g)}</span>`).join('')}
-                        </span>
-                    </div>
-                    <div>
-                        <span class="badge ${coverageBadgeClass}">${graphCount}/${totalGraphs} grafos</span>
-                    </div>
-                    <div style="text-align: right; padding-right: 8px;">
-                        <button class="btn btn-ghost btn-delete-plugin" data-id="${plugin.id}" style="color: var(--error-color);" title="Eliminar plugin">🗑️</button>
+                <div class="plugin-item ${isSelected ? 'plugin-selected' : ''}" data-plugin-name="${this.escapeHTML(plugin.name)}">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                            <input type="checkbox" class="plugin-checkbox" data-plugin-name="${this.escapeHTML(plugin.name)}" ${isSelected ? 'checked' : ''}>
+                            <div>
+                                <span class="title-text" style="font-size: 0.9rem; ${isSelected ? 'color: var(--accent-purple); font-weight: 600;' : ''}" title="${this.escapeHTML(plugin.name)}">
+                                    🔌 ${this.escapeHTML(plugin.name)}
+                                </span>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge ${coverageBadgeClass}" style="font-size: 0.65rem;">${graphCount}/${totalGraphs}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost btn-delete-plugin" data-id="${plugin.id}" style="color: var(--error-color); padding: 4px; font-size: 0.8rem;" title="Eliminar plugin">🗑️</button>
                     </div>
                 </div>
             `;
         }).join('');
 
-        container.innerHTML = `
-            <div class="activity-table" style="overflow-x: auto;">
-                <div class="activity-list-header" style="grid-template-columns: minmax(250px, 2fr) 200px 120px 80px;">
-                    <div>Plugin</div>
-                    <div>Presente en</div>
-                    <div>Cobertura</div>
-                    <div style="text-align: right; padding-right: 8px;">Acción</div>
-                </div>
-                <div class="activity-table-body">
-                    ${listHTML}
-                </div>
-            </div>
-        `;
-    },
-
-    /**
-     * Render the sync form panel for a selected plugin
-     * @param {HTMLElement} container - Container element
-     * @param {Object} plugin - Selected plugin object
-     * @param {number} totalGraphs - Total configured graphs
-     * @param {string[]} allGraphNames - All configured graph names
-     */
-    renderPluginSyncPanel(container, plugin, totalGraphs, allGraphNames) {
-        if (!plugin) {
-            container.innerHTML = `
-                <div class="empty-state" style="padding: var(--spacing-lg);">
-                    <p class="hint">Selecciona un plugin de la lista para sincronizarlo.</p>
-                </div>
-            `;
-            return;
-        }
-
-        const missingGraphs = allGraphNames.filter(g => !plugin.graphs.includes(g));
-
-        container.innerHTML = `
-            <div class="plugin-sync-form">
-                <h3 style="margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
-                    🔄 Sincronizar: <span style="color: var(--accent-purple);">${this.escapeHTML(plugin.name)}</span>
-                </h3>
-
-                <div class="plugin-sync-info" style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                    <p><strong>Presente en:</strong> ${plugin.graphs.map(g => `<span class="graph-pill" style="margin: 2px;">${this.escapeHTML(g)}</span>`).join(' ')}</p>
-                    ${missingGraphs.length > 0 ? `<p style="margin-top: var(--spacing-xs); color: var(--accent-yellow);"><strong>Falta en:</strong> ${missingGraphs.map(g => `<span class="graph-pill" style="margin: 2px; border-color: var(--accent-yellow);">${this.escapeHTML(g)}</span>`).join(' ')}</p>` : ''}
-                </div>
-
-                ${missingGraphs.length > 0 ? `
-                <div class="form-group" style="margin-bottom: var(--spacing-md);">
-                    <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                        <input type="checkbox" id="sync-create-missing" style="width: 18px; height: 18px;">
-                        <span>También crear en grafos donde no existe (${missingGraphs.length} grafos)</span>
-                    </label>
-                </div>
-                ` : ''}
-
-                <div class="form-group">
-                    <label for="sync-code">Código JavaScript *</label>
-                    <textarea id="sync-code" class="code-textarea" placeholder="Pega aquí el código actualizado del plugin..." style="min-height: 300px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.5; tab-size: 2;"></textarea>
-                    <p class="hint">Se creará la estructura: {{[[roam/js]]}} → \`\`\`javascript [tu código] \`\`\`</p>
-                </div>
-
-                <div class="plugin-sync-preview" id="sync-preview" style="margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px dashed var(--border-color); display: none;">
-                    <h4 style="margin-bottom: var(--spacing-sm); color: var(--text-secondary);">📋 Preview</h4>
-                    <div id="sync-preview-content"></div>
-                </div>
-
-                <div class="btn-group" style="margin-top: var(--spacing-lg);">
-                    <button id="btn-execute-sync" class="btn btn-primary" style="background: var(--accent-purple); border-color: var(--accent-purple);">
-                        🔄 Sincronizar Plugin
-                    </button>
-                    <button id="btn-cancel-sync" class="btn btn-secondary">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        `;
+        container.innerHTML = listHTML;
     }
 };
 

@@ -175,15 +175,53 @@
             </div>
           </div>
 
-          <!-- Plugin List -->
-          <div id="plugins-content" class="dashboard-content">
-            <!-- Plugin list rendered by JS -->
+          <!-- 3 Columns Layout: Info Plugin | Grafos | Código -->
+          <div class="plugins-main-grid">
+            <!-- Column 1: Plugin Info -->
+            <div class="card">
+              <div class="card-header">
+                <h2>Plugin Seleccionado</h2>
+              </div>
+              <div id="plugin-info" class="plugin-info">
+                <!-- Plugin details rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Column 2: Grafos Destino -->
+            <div class="card">
+              <div class="card-header">
+                <h2>Grafos Destino</h2>
+                <button id="btn-select-all-plugins" class="btn btn-ghost" title="Seleccionar todos">☑</button>
+              </div>
+              <div id="plugin-graphs-checkboxes" class="graphs-list tall">
+                <!-- Graph checkboxes rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Column 3: Código -->
+            <div class="card">
+              <div class="card-header">
+                <h2>Código JavaScript</h2>
+              </div>
+              <div class="form-group">
+                <textarea id="sync-code" class="code-textarea" placeholder="Pega aquí el código del plugin..."></textarea>
+                <p class="hint">Se creará la estructura: {{[[roam/js]]}} → ```javascript [tu código] ```</p>
+              </div>
+              <div class="btn-group">
+                <button id="btn-execute-sync" class="btn btn-primary" style="background: var(--accent-purple); border-color: var(--accent-purple);">
+                  🔄 Sincronizar Plugin
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- Sync Panel (appears when plugin is selected) -->
-          <div id="plugin-sync-panel" class="card" style="margin-top: var(--spacing-lg);">
-            <div class="empty-state" style="padding: var(--spacing-lg);">
-              <p class="hint">Selecciona un plugin de la lista para sincronizarlo.</p>
+          <!-- Full Plugin List (bottom, for reference) -->
+          <div class="card" style="margin-top: var(--spacing-lg);">
+            <div class="card-header">
+              <h2>Plugins Descubiertos (todos)</h2>
+            </div>
+            <div id="plugins-content">
+              <!-- Full plugin list rendered by JS -->
             </div>
           </div>
         </div>
