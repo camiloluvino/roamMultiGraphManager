@@ -40,11 +40,13 @@ Para cada grafo que quieras gestionar:
 
 ### 2. Configurar y Activar Grafos
 
-1. Abre `index.html` en tu navegador.
-2. Ve a la pestaña **⚙️ Configuración**.
-3. En el panel izquierdo, ingresa el nombre del grafo y su API Token, luego click en **Agregar Grafo**.
-4. En el panel central (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
-5. Los grafos seleccionados aparecerán en el panel derecho (**Grafos Activos**) para confirmar tu selección antes de operar.
+1. Ejecuta `iniciar.bat` (doble click) para iniciar el servidor local
+2. Se abrirá automáticamente el navegador con la app en `http://localhost:8000`
+3. Ve a la pestaña **⚙️ Configuración**.
+4. En el panel izquierdo, ingresa el nombre del grafo y su API Token, luego click en **Agregar Grafo**.
+5. En el panel central (**Tus Grafos**), marca los checkboxes de los grafos con los que quieras operar.
+6. Los grafos seleccionados aparecerán en el panel derecho (**Grafos Activos**) para confirmar tu selección antes de operar.
+
 
 ### 3. Registrar Páginas de Interés (Manual o Auto)
 1. Ve a la pestaña **Grafos** o **Conversaciones**.
@@ -96,6 +98,13 @@ Para cada grafo que quieras gestionar:
 - **No uses esta app en computadoras públicas**
 - Los grafos encriptados (E2E) no son compatibles con la API
 - La búsqueda de páginas es por título **exacto**
+- **Importante:** Siempre usa `iniciar.bat` (servidor local) para abrir la app. Abrir `index.html` directamente causará errores CORS al intentar escribir en los grafos.
+
+## 🚀 Inicio Rápido
+
+1. Haz **doble click** en `iniciar.bat`
+2. Se abrirá automáticamente la app en tu navegador
+3. ¡Listo para usar!
 
 ## 📁 Estructura
 
