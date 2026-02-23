@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.3.0** (Nueva Pestaña: Plugins - Sincronización Multi-Grafo de roam/js)
+**v0.3.1** (Hotfix: 3 Bugs Críticos)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -21,6 +21,11 @@
 - 🟢 **🔌 Plugins (NUEVO):** Pestaña dedicada para gestionar y sincronizar plugins `roam/js/` en múltiples grafos simultáneamente.
 
 ## 3. Historial Reciente
+- **HOTFIX: 3 BUGS CRÍTICOS (v0.3.1):** Tras una revisión integral de código, se corrigieron tres errores que afectaban la usabilidad:
+  - **Arreglo en Sort Dashboard:** Se corrigió un error de sintaxis en `app.js` que impedía que el ordenamiento de columnas alternara entre ascendente y descendente.
+  - **Funciones Faltantes:** Se implementaron `autoScanConversaciones()` y `toggleAllPluginGraphs()` que estaban siendo llamadas pero no existían, eliminando crashes al usarlas.
+  - **Fondo de Modal:** Se cambió el background de `.modal` de transparente a sólido (`var(--bg-primary)`), haciendo que los diálogos de confirmación y resultados sean legibles.
+  - **Correcciones JSDoc:** Limpieza de comentarios inconsistentes.
 - **NUEVA PESTAÑA PLUGINS (v0.3.0):** Se implementó una nueva pestaña principal "Plugins" para resolver el problema de sincronización de complementos `roam/js/` entre múltiples grafos. Funcionalidades:
   - **Auto-Escaneo de Plugins:** Botón "Escanear Plugins" que busca todas las páginas con prefijo `roam/js/` en los grafos activos y registra cada plugin con la lista de grafos donde existe.
   - **Tabla de Plugins:** Vista tabular con nombre del plugin, grafos donde está presente, y badge de cobertura (X/N grafos).
@@ -33,20 +38,7 @@
   - **Nuevos métodos API:** `getPagesByPrefix()`, `getPageChildren()`, `deleteBlock()`, `syncPluginPage()`.
 - **REDISEÑO PESTAÑA OPERACIONES (v0.2.2):** Se rediseñó completamente la pestaña de Operaciones con un layout de 2 columnas. Panel izquierdo **sticky** con selector dinámico de grafos (checkboxes generados automáticamente), panel derecho con formularios y preview. Se implementó sincronización bidireccional: cambios en Config ↔ Operaciones se sincronizan automáticamente.
 - **CORRECCIÓN PREVIEW PANEL (v0.2.1):** Se arregló la sección de "Grafos destino" en el preview. Se agregó `flex-wrap: wrap` y mejor espaciado visual.
-- **REDISEÑO FULL-WIDTH Y NAVEGACIÓN (v0.2.0):** Se eliminó la columna lateral (sidebar) para liberar espacio y ampliar el contenido de las pestañas principales.
-
-## 4. Problemas Conocidos (Bugs / TODOs)
-- **Limitación en UI:** Si falla un event listener por un ID que no se encuentra en el HTML en `app.js`, la consola arrojará error pero la interfaz no dará feedback visible.
-- **Riesgo:** Los tokens se guardan en texto plano en localStorage; si bien se mitigo XSS básico, extensiones maliciosas siguen siendo un vector de ataque.
-- **Limitación:** Las operaciones sobre múltiples grafos fallan en modo "todo o nada".
-- **Plugins:** El escaneo de plugins requiere grafos activos seleccionados. Si no hay ninguno seleccionado, no se puede escanear.
-
-## 5. Próximos Pasos Recomendados
-1. Implementar un "Dry-run" de conexión con la API la primera vez que inicia la app para marcar de color rojo tokens inválidos o caducados.
-2. Añadir un sistema de "Deshacer" básico (ej. si se creó una página en 10 grafos y uno quiere revertir la acción).
 3. Mejorar visibilidad del estado de los grafos (ej. indicador de conexión exitosa/fallida junto a cada grafo en el selector).
-4. Añadir opción de leer código desde un grafo fuente (complemento al textarea manual) para los plugins.
-5. Soporte para plugins con estructura más compleja (múltiples bloques hijos, no solo código).
 
 ---
 

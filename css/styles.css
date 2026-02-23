@@ -124,7 +124,7 @@ h3 {
 /* Config Grid Layout */
 .config-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: var(--spacing-lg);
   align-items: start;
 }
@@ -496,7 +496,7 @@ h3 {
 }
 
 .modal {
-  background: var(--bg-card);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);

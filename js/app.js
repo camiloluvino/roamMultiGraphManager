@@ -65,7 +65,7 @@ const App = {
 
     sortDashboard(column) {
         if (this.dashboardSort.column === column) {
-            this.dashboardSort.direction === 'asc' ? 'desc' : 'asc';
+            this.dashboardSort.direction = this.dashboardSort.direction === 'asc' ? 'desc' : 'asc';
         } else {
             this.dashboardSort.column = column;
             this.dashboardSort.direction = 'asc';
@@ -131,7 +131,7 @@ const App = {
     seedDefaultGraphs() {
         // Load local config if it exists (config.local.js)
         let defaultGraphs = {};
-        
+
         if (typeof LOCAL_CONFIG !== 'undefined' && LOCAL_CONFIG && LOCAL_CONFIG.graphs) {
             defaultGraphs = LOCAL_CONFIG.graphs;
         }
@@ -998,6 +998,60 @@ const App = {
     },
 
     /**
+     * Auto scan configured active graphs for /conversacionesChatbots
+     */
+    async autoScanConversaciones() {
+        if (this.selectedGraphs.size === 0) {
+            UI.toast('Selecciona al menos un grafo activo', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-auto-scan-conversaciones');
+        if (btn) UI.setButtonLoading(btn, true);
+
+        let addedCount = 0;
+        const currentConversaciones = Storage.getConversaciones();
+        const existingSet = new Set(currentConversaciones.map(r => `${r.graph}::${r.title}`));
+
+        for (const graphName of this.selectedGraphs) {
+            const config = Storage.getGraph(graphName);
+            if (!config) continue;
+
+            try {
+                const graph = RoamAPI.initGraph(graphName, config.token);
+                const pages = await RoamAPI.getPagesBySuffix(graph, '/conversacionesChatbots');
+
+                for (const title of pages) {
+                    const key = `${graphName}::${title}`;
+                    if (!existingSet.has(key)) {
+                        Storage.saveConversacion({ graph: graphName, title });
+                        existingSet.add(key);
+                        addedCount++;
+                    }
+                }
+            } catch (error) {
+                console.error(`Error escaneando ${graphName}:`, error);
+                Storage.addLog('error', `Error escaneando conversaciones en ${graphName}: ${error.message}`);
+                UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
+            }
+        }
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '🔍 Auto-Escanear "/conversacionesChatbots"';
+        }
+
+        if (addedCount > 0) {
+            UI.toast(`Se agregaron ${addedCount} nuevas conversaciones automáticamente`, 'success');
+            Storage.addLog('success', `Auto-escaneo conversaciones: ${addedCount} páginas agregadas`);
+            this.refreshConversaciones();
+            this.renderLogs();
+        } else {
+            UI.toast('No se encontraron nuevas conversaciones', 'info');
+        }
+    },
+
+    /**
      * Delete manual register
      */
     async deleteRegistro(id) {
@@ -1070,7 +1124,7 @@ const App = {
     },
 
     /**
-     * Remove a graph
+     * Render plugin info panel for selected plugins
      */
     renderPluginInfo() {
         const container = document.getElementById('plugin-info');
@@ -1082,7 +1136,7 @@ const App = {
         }
 
         const plugins = Storage.getPlugins().filter(p => this.selectedPlugins.has(p.name));
-        
+
         if (plugins.length === 0) {
             container.innerHTML = '<p class="hint">Plugin no encontrado</p>';
             return;
@@ -1090,10 +1144,10 @@ const App = {
 
         // Show list with one radio per plugin (only one active at a time)
         let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
-        
+
         for (const plugin of plugins) {
             const isActive = this.selectedPluginName === plugin.name;
-            
+
             html += `
                 <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: ${isActive ? 'var(--bg-tertiary)' : 'var(--bg-secondary)'}; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid ${isActive ? 'var(--accent-purple)' : 'transparent'};">
                     <input type="radio" name="active-plugin" class="active-plugin-radio" value="${UI.escapeHTML(plugin.name)}" ${isActive ? 'checked' : ''}>
@@ -1101,9 +1155,9 @@ const App = {
                 </label>
             `;
         }
-        
+
         html += '</div>';
-        
+
         // Add hint
         html += '<p class="hint" style="margin-top: 12px; font-size: 0.75rem;">Marca el plugin que vas a sincronizar ahora</p>';
 
@@ -1148,11 +1202,20 @@ const App = {
     },
 
     /**
+     * Toggle all plugin graph checkboxes on/off
+     * @param {boolean} selectAll - Whether to select all
+     */
+    toggleAllPluginGraphs(selectAll) {
+        const checkboxes = document.querySelectorAll('.plugin-graph-checkbox');
+        checkboxes.forEach(cb => { cb.checked = selectAll; });
+    },
+
+    /**
      * Refresh plugins view - 3-column layout
      */
     refreshPlugins() {
         const container = document.getElementById('plugins-content');
-        
+
         if (!container) return;
 
         const plugins = Storage.getPlugins();
@@ -1199,7 +1262,7 @@ const App = {
         } else {
             this.selectedPlugins.delete(pluginName);
         }
-        
+
         // Update plugin info column with all selected plugins
         this.renderPluginInfo();
     },
@@ -1308,9 +1371,9 @@ const App = {
             <p><strong>Grafos destino (${targetGraphs.length}):</strong></p>
             <div style="display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px;">
                 ${targetGraphs.map(g => {
-                    const isMissing = !plugin.graphs.includes(g);
-                    return `<span class="graph-pill" style="font-size: 0.7rem; ${isMissing ? 'border-color: var(--accent-yellow); color: var(--accent-yellow);' : ''}">${UI.escapeHTML(g)}${isMissing ? ' (nuevo)' : ''}</span>`;
-                }).join('')}
+            const isMissing = !plugin.graphs.includes(g);
+            return `<span class="graph-pill" style="font-size: 0.7rem; ${isMissing ? 'border-color: var(--accent-yellow); color: var(--accent-yellow);' : ''}">${UI.escapeHTML(g)}${isMissing ? ' (nuevo)' : ''}</span>`;
+        }).join('')}
             </div>
             <p><strong>Estructura:</strong></p>
             <pre style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px; font-size: 0.8rem; overflow-x: auto; margin-top: 4px;">+ {{[[roam/js]]}}
