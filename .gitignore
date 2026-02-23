@@ -1,0 +1,12 @@
+# Archivos locales sensibles (no subir a Git)
+config.local.js
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -100,17 +100,42 @@ Para cada grafo que quieras gestionar:
 
 ```
 roamMultiGraphManager/
-├── index.html      # Interfaz principal
-├── docs/           # Documentación y referencias externas
+├── index.html         # Interfaz principal
+├── config.local.js    # Configuración local (tokens de API) - NO subir a Git
+├── .gitignore         # Excluye config.local.js
+├── docs/              # Documentación y referencias externas
 ├── css/
-│   └── styles.css  # Estilos dark theme
+│   └── styles.css     # Estilos dark theme
 ├── js/
-│   ├── app.js      # Punto de entrada (ES Module)
-│   ├── api.js      # Wrapper Roam API
-│   ├── storage.js  # Gestión de tokens/logs
-│   └── ui.js       # Componentes de UI
-└── README.md       # Este archivo
+│   ├── app.js         # Punto de entrada
+│   ├── api.js         # Wrapper Roam API
+│   ├── storage.js     # Gestión de tokens/logs
+│   └── ui.js          # Componentes de UI
+└── README.md          # Este archivo
 ```
+
+## 🔐 Configuración Local (Tokens de API)
+
+Para proteger tus tokens de API, puedes crear un archivo `config.local.js` con tus grafos. Este archivo **no se subirá a Git** gracias al `.gitignore`.
+
+### Cómo crear config.local.js
+
+1. Crea un archivo llamado `config.local.js` en la raíz del proyecto
+2. Agrega tus grafos:
+
+```javascript
+// config.local.js
+const LOCAL_CONFIG = {
+    graphs: {
+        "nombre-grafo-1": "roam-graph-token-xxx",
+        "nombre-grafo-2": "roam-graph-token-yyy"
+    }
+};
+```
+
+3. Los grafos se cargarán automáticamente al abrir la aplicación
+
+> **Nota:** Si no existe `config.local.js`, la aplicación funcionará normalmente pero sin grafos precargados. Podrás agregar grafos manualmente desde la pestaña de Configuración.
 
 ## 🔗 Referencias
 

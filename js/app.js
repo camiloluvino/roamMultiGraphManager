@@ -125,20 +125,16 @@ const App = {
     },
 
     /**
-     * Seed default graphs from config
+     * Seed default graphs from config.local.js
+     * Loads configuration from config.local.js if it exists
      */
     seedDefaultGraphs() {
-        const defaultGraphs = {
-            "metodometodo": "roam-graph-token-sVJ9No69ESjfTCR60yKJzYImUTE67",
-            "metodoMetodo_pensiero": "roam-graph-token-wDAIAWQfMpdfz_2yN7SFFBW0BefOD",
-            "teson": "roam-graph-token-udznoik4TDVrCFM4EuQtivBfcN4fW",
-            "teson_labmet": "roam-graph-token-Y0YY_J_Xn-l75hWclNZmk3O4q0_ek",
-            "teson_taller": "roam-graph-token-mny9cg7j2XLLdzphsh2N89eiP14By",
-            "mentographus": "roam-graph-token-MYpNKkFDjDCDWLsDx9f6jR4OnZ_Em",
-            "terrenal_mh": "roam-graph-token-3zC91QuzJLljptDbOX6MEkRtSsNtX",
-            "estoesTeoriaAvanzada": "roam-graph-token-9km0AjKE-WjFl-NrksFSRACIIcaV_",
-            "estoesTeoriaAvanzada_psico": "roam-graph-token-2nOTXcZk5oL2qNZdoUEmUGrtGop5f"
-        };
+        // Load local config if it exists (config.local.js)
+        let defaultGraphs = {};
+        
+        if (typeof LOCAL_CONFIG !== 'undefined' && LOCAL_CONFIG && LOCAL_CONFIG.graphs) {
+            defaultGraphs = LOCAL_CONFIG.graphs;
+        }
 
         const currentGraphs = Storage.getGraphs();
         let added = false;
