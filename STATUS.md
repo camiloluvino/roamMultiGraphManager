@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.4.1** (Persistencia de selección de Plugins)
+**v0.4.2** (Proxy de API para Escritura)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -21,8 +21,13 @@
 - 🟢 **🔌 Plugins:** Pestaña dedicada para gestionar y sincronizar plugins `roam/js/` en múltiples grafos simultáneamente.
 - 🟢 **Auto-Shutdown (NUEVO):** Cierre automático de la terminal (servidor local) al cerrar la pestaña del navegador mediante sistema de heartbeat.
 - 🟢 **Persistencia de Plugins (v0.4.1):** La selección de plugins de la lista inferior ahora persiste entre sesiones.
+- 🟢 **Proxy de API (NUEVO v0.4.2):** Sistema de puente para operaciones de escritura que evita límites de tamaño del navegador y maneja redirecciones HTTP 308 de Roam.
 
 ## 3. Historial Reciente
+- **PROXY DE API PARA ESCRITURA (v0.4.2):**
+  - **Bypass de Límites:** Las operaciones de escritura (`write`) ahora se enrutan a través del servidor local Python para evitar el error `ERR_CONNECTION_RESET` en plugins de gran tamaño.
+  - **Soporte Redirect 308:** Implementación de un manejador de redirecciones personalizado en el servidor para seguir correctamente los cambios de URL de la API de Roam sin perder el método POST ni el body.
+  - **Telemetría de Sincronización:** Se añadieron logs detallados paso a paso en la consola para facilitar el diagnóstico de errores en la sincronización de plugins.
 - **PERSISTENCIA DE SELECCIÓN DE PLUGINS (v0.4.1):**
   - **Memoria de Selección:** Se implementó la persistencia de los plugins seleccionados en la lista inferior usando `localStorage`.
   - **Recuperación Automática:** Al iniciar la app, los plugins que estaban seleccionados vuelven a aparecer en la columna de "Plugin Seleccionado".

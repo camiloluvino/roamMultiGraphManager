@@ -27,14 +27,31 @@ const RoamAPI = {
      */
     async _request(graph, endpoint, payload) {
         try {
-            const response = await fetch(`${graph.baseUrl}/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'X-Authorization': `Bearer ${graph.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
+            let response;
+
+            if (endpoint === 'write') {
+                // Route write operations through local proxy to avoid browser payload limits
+                console.log(`[API] Usando proxy local para write en ${graph.name}`);
+                response = await fetch('/api/proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: `${graph.baseUrl}/${endpoint}`,
+                        token: graph.token,
+                        payload: payload
+                    })
+                });
+            } else {
+                // Direct request for read operations (q, pull)
+                response = await fetch(`${graph.baseUrl}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Authorization': `Bearer ${graph.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
 
             const text = await response.text();
 
@@ -43,6 +60,7 @@ const RoamAPI = {
                 try {
                     const errorObj = JSON.parse(text);
                     if (errorObj.message) errorMsg = errorObj.message;
+                    if (errorObj.error) errorMsg = errorObj.error;
                 } catch {
                     if (text) errorMsg = text;
                 }
@@ -57,7 +75,11 @@ const RoamAPI = {
                 return text; // Some endpoints might return OK with no JSON
             }
         } catch (error) {
-            throw new Error(`Error de conexión con ${graph.name}: ${error.message}`);
+            let msg = error.message;
+            if (msg.includes('Failed to fetch')) {
+                msg += ' (Token de API inválido o nombre de grafo incorrecto)';
+            }
+            throw new Error(`Error de conexión con ${graph.name}: ${msg}`);
         }
     },
 
@@ -307,17 +329,22 @@ const RoamAPI = {
      * @returns {Promise<Object>} Result with status
      */
     async syncPluginPage(graph, title, code, createIfMissing = false) {
+        console.log(`[syncPlugin] Inicio sync "${title}" en ${graph.name}, createIfMissing=${createIfMissing}`);
+
         // 1. Find page
+        console.log(`[syncPlugin] Paso 1: Buscando página "${title}"...`);
         const page = await this.getPageByTitle(graph, title);
+        console.log(`[syncPlugin] Paso 1 OK: página ${page ? 'encontrada (uid=' + page[':block/uid'] + ')' : 'NO encontrada'}`);
 
         if (!page && !createIfMissing) {
-            return { success: false, message: 'Página no encontrada' };
+            return { success: false, message: 'Página no encontrada (createIfMissing=false)' };
         }
 
         let pageUid;
 
         if (!page) {
             // Create the page first
+            console.log(`[syncPlugin] Paso 2: Creando página nueva...`);
             pageUid = this.generateUid();
             await this._request(graph, 'write', {
                 action: 'batch-actions',
@@ -326,12 +353,16 @@ const RoamAPI = {
                     page: { title, uid: pageUid }
                 }]
             });
+            console.log(`[syncPlugin] Paso 2 OK: página creada con uid=${pageUid}`);
         } else {
             pageUid = page[':block/uid'];
 
             // 2. Get existing children and delete them all
+            console.log(`[syncPlugin] Paso 2: Obteniendo hijos de la página...`);
             const children = await this.getPageChildren(graph, pageUid);
+            console.log(`[syncPlugin] Paso 2 OK: ${children.length} hijos encontrados`);
             if (children.length > 0) {
+                console.log(`[syncPlugin] Paso 2b: Eliminando ${children.length} hijos...`);
                 const deleteActions = children.map(child => ({
                     action: 'delete-block',
                     block: { uid: child.uid }
@@ -340,10 +371,12 @@ const RoamAPI = {
                     action: 'batch-actions',
                     actions: deleteActions
                 });
+                console.log(`[syncPlugin] Paso 2b OK: hijos eliminados`);
             }
         }
 
         // 3. Create new structure: parent block + code child
+        console.log(`[syncPlugin] Paso 3: Creando estructura nueva...`);
         const parentBlockUid = this.generateUid();
         const childBlockUid = this.generateUid();
         const codeContent = '```javascript\n' + code + '\n```';
@@ -363,6 +396,7 @@ const RoamAPI = {
                 }
             ]
         });
+        console.log(`[syncPlugin] Paso 3 OK: estructura creada`);
 
         return { success: true, message: page ? 'Plugin sincronizado' : 'Plugin creado y sincronizado' };
     },

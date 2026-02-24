@@ -171,17 +171,18 @@ const App = {
         }
 
         const currentGraphs = Storage.getGraphs();
-        let added = false;
+        let updated = false;
 
         for (const [name, token] of Object.entries(defaultGraphs)) {
-            if (!currentGraphs[name]) {
+            // Guardar si no existe o si el token en config.local.js es diferente al actual
+            if (!currentGraphs[name] || currentGraphs[name].token !== token) {
                 Storage.saveGraph(name, token);
-                added = true;
+                updated = true;
             }
         }
 
-        if (added) {
-            Storage.addLog('info', 'Grafos por defecto cargados automáticamente.');
+        if (updated) {
+            Storage.addLog('info', 'Configuración de grafos actualizada desde config.local.js.');
         }
     },
 
