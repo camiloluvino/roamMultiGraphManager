@@ -19,6 +19,7 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 - **🔌 Sincronización de Plugins:** Escanea automáticamente todos tus plugins `roam/js/` en los grafos activos, selecciona uno, pega el código nuevo y sincronízalo en todos los grafos con un solo click. Incluye opción para crear el plugin en grafos donde aún no existe.
 - **🛡️ Auto-Shutdown Inteligente:** El servidor local se cierra automáticamente entre 2 y 5 segundos después de que cierras la pestaña del navegador, manteniendo tu escritorio limpio de terminales huérfanas.
 - **🔗 Proxy de API (v0.4.2):** Las operaciones de escritura se realizan a través del servidor local para permitir la subida de plugins pesados y manejar redirecciones de la API de Roam.
+- **⚡ Optimización de Rendimiento (v0.5.0):** Guardado masivo (*Bulk Store*) y peticiones de red por lotes (*Batching*) para garantizar una interfaz fluida y evitar bloqueos del navegador.
 
 ## 📋 Requisitos
 

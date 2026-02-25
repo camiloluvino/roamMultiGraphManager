@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.4.2** (Proxy de API para Escritura)
+**v0.5.0** (Optimización de Rendimiento y Procesamiento por Lotes)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -24,6 +24,10 @@
 - 🟢 **Proxy de API (NUEVO v0.4.2):** Sistema de puente para operaciones de escritura que evita límites de tamaño del navegador y maneja redirecciones HTTP 308 de Roam.
 
 ## 3. Historial Reciente
+- **OPTIMIZACIÓN DE RENDIMIENTO Y LOTES (v0.5.0):**
+  - **Bulk Storage Write:** Implementación de guardado masivo en `localStorage` reduciendo el bloqueo del hilo principal durante escaneos.
+  - **Batch Fetching:** Las consultas de metadatos (tiempos de edición) ahora se procesan en baches concurrentes de a 10 para evitar saturación de red.
+  - **UI Fluida:** Eliminación de micro-congelamientos al navegar por listas extensas de registros.
 - **PROXY DE API PARA ESCRITURA (v0.4.2):**
   - **Bypass de Límites:** Las operaciones de escritura (`write`) ahora se enrutan a través del servidor local Python para evitar el error `ERR_CONNECTION_RESET` en plugins de gran tamaño.
   - **Soporte Redirect 308:** Implementación de un manejador de redirecciones personalizado en el servidor para seguir correctamente los cambios de URL de la API de Roam sin perder el método POST ni el body.

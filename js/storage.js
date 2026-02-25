@@ -237,6 +237,31 @@ const Storage = {
     },
 
     /**
+     * Save multiple new manual registers
+     * @param {Array} dataArray - Array of { graph, title }
+     */
+    saveRegistrosBulk(dataArray) {
+        if (!dataArray || dataArray.length === 0) return;
+        const registros = this.getRegistros();
+        const now = new Date().toISOString();
+
+        const newRegs = dataArray.map(data => ({
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+            graph: data.graph,
+            title: data.title,
+            addedAt: now
+        }));
+
+        registros.push(...newRegs);
+
+        try {
+            localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
+        } catch (e) {
+            console.error('Error saving bulk registros to storage', e);
+        }
+    },
+
+    /**
      * Delete a manual register
      * @param {string} id - Register ID
      */
@@ -281,6 +306,31 @@ const Storage = {
             localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
         } catch (e) {
             console.error('Error saving conversaciones to storage', e);
+        }
+    },
+
+    /**
+     * Save multiple new manual conversaciones
+     * @param {Array} dataArray - Array of { graph, title }
+     */
+    saveConversacionesBulk(dataArray) {
+        if (!dataArray || dataArray.length === 0) return;
+        const conversaciones = this.getConversaciones();
+        const now = new Date().toISOString();
+
+        const newRegs = dataArray.map(data => ({
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+            graph: data.graph,
+            title: data.title,
+            addedAt: now
+        }));
+
+        conversaciones.push(...newRegs);
+
+        try {
+            localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
+        } catch (e) {
+            console.error('Error saving bulk conversaciones to storage', e);
         }
     },
 
@@ -339,6 +389,48 @@ const Storage = {
             localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
         } catch (e) {
             console.error('Error saving plugins to storage', e);
+        }
+    },
+
+    /**
+     * Save/update multiple plugins (bulk)
+     * @param {Array} pluginDataArray - Array of { name, graphs: [graphName, ...] }
+     */
+    savePluginsBulk(pluginDataArray) {
+        if (!pluginDataArray || pluginDataArray.length === 0) return;
+
+        const plugins = this.getPlugins();
+        let changed = false;
+        const now = new Date().toISOString();
+
+        for (const data of pluginDataArray) {
+            const existing = plugins.find(p => p.name === data.name);
+            if (existing) {
+                // Merge graphs
+                const graphSet = new Set([...existing.graphs, ...(data.graphs || [])]);
+                if (existing.graphs.length !== graphSet.size) {
+                    existing.graphs = Array.from(graphSet);
+                    existing.updatedAt = now;
+                    changed = true;
+                }
+            } else {
+                plugins.push({
+                    id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+                    name: data.name,
+                    graphs: data.graphs || [],
+                    addedAt: now,
+                    updatedAt: now
+                });
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            try {
+                localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
+            } catch (e) {
+                console.error('Error saving bulk plugins to storage', e);
+            }
         }
     },
 

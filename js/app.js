@@ -933,21 +933,28 @@ const App = {
 
         if (registros.length === 0) return;
 
-        // Fetch last edit times
-        const timePromises = registros.map(async (reg) => {
-            const config = Storage.getGraph(reg.graph);
-            if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
-            try {
-                const graph = RoamAPI.initGraph(reg.graph, config.token);
-                // Return max edited time 
-                const time = await RoamAPI.getPageEditTime(graph, reg.title);
-                return { ...reg, lastEdited: time, error: null };
-            } catch (e) {
-                return { ...reg, lastEdited: null, error: 'Error API' };
-            }
-        });
+        // Fetch last edit times (in batches to avoid making hundreds of requests at once)
+        const updatedRegistros = [];
+        const batchSize = 10;
 
-        const updatedRegistros = await Promise.all(timePromises);
+        for (let i = 0; i < registros.length; i += batchSize) {
+            const batch = registros.slice(i, i + batchSize);
+            const timePromises = batch.map(async (reg) => {
+                const config = Storage.getGraph(reg.graph);
+                if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
+                try {
+                    const graph = RoamAPI.initGraph(reg.graph, config.token);
+                    // Return max edited time 
+                    const time = await RoamAPI.getPageEditTime(graph, reg.title);
+                    return { ...reg, lastEdited: time, error: null };
+                } catch (e) {
+                    return { ...reg, lastEdited: null, error: 'Error API' };
+                }
+            });
+
+            const results = await Promise.all(timePromises);
+            updatedRegistros.push(...results);
+        }
         this.lastRegistrosData = updatedRegistros;
         UI.renderRegistros(container, updatedRegistros, false, this.registrosSort, 'registro');
     },
@@ -991,6 +998,7 @@ const App = {
         let addedCount = 0;
         const currentRegistros = Storage.getRegistros();
         const existingSet = new Set(currentRegistros.map(r => `${r.graph}::${r.title}`));
+        const newRegistrosObj = [];
 
         for (const graphName of this.selectedGraphs) {
             const config = Storage.getGraph(graphName);
@@ -1004,7 +1012,7 @@ const App = {
                 for (const title of pages) {
                     const key = `${graphName}::${title}`;
                     if (!existingSet.has(key)) {
-                        Storage.saveRegistro({ graph: graphName, title });
+                        newRegistrosObj.push({ graph: graphName, title });
                         existingSet.add(key);
                         addedCount++;
                     }
@@ -1014,6 +1022,10 @@ const App = {
                 Storage.addLog('error', `Error escaneando ${graphName}: ${error.message}`);
                 UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
             }
+        }
+
+        if (newRegistrosObj.length > 0) {
+            Storage.saveRegistrosBulk(newRegistrosObj);
         }
 
         if (btn) {
@@ -1047,6 +1059,7 @@ const App = {
         let addedCount = 0;
         const currentConversaciones = Storage.getConversaciones();
         const existingSet = new Set(currentConversaciones.map(r => `${r.graph}::${r.title}`));
+        const newConversacionesObj = [];
 
         for (const graphName of this.selectedGraphs) {
             const config = Storage.getGraph(graphName);
@@ -1059,7 +1072,7 @@ const App = {
                 for (const title of pages) {
                     const key = `${graphName}::${title}`;
                     if (!existingSet.has(key)) {
-                        Storage.saveConversacion({ graph: graphName, title });
+                        newConversacionesObj.push({ graph: graphName, title });
                         existingSet.add(key);
                         addedCount++;
                     }
@@ -1069,6 +1082,10 @@ const App = {
                 Storage.addLog('error', `Error escaneando conversaciones en ${graphName}: ${error.message}`);
                 UI.toast(`Error en ${graphName}: ${error.message}`, 'error');
             }
+        }
+
+        if (newConversacionesObj.length > 0) {
+            Storage.saveConversacionesBulk(newConversacionesObj);
         }
 
         if (btn) {
@@ -1116,20 +1133,27 @@ const App = {
 
         if (conversaciones.length === 0) return;
 
-        // Fetch last edit times
-        const timePromises = conversaciones.map(async (reg) => {
-            const config = Storage.getGraph(reg.graph);
-            if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
-            try {
-                const graph = RoamAPI.initGraph(reg.graph, config.token);
-                const time = await RoamAPI.getPageEditTime(graph, reg.title);
-                return { ...reg, lastEdited: time, error: null };
-            } catch (e) {
-                return { ...reg, lastEdited: null, error: 'Error API' };
-            }
-        });
+        // Fetch last edit times (in batches)
+        const updatedConversaciones = [];
+        const batchSize = 10;
 
-        const updatedConversaciones = await Promise.all(timePromises);
+        for (let i = 0; i < conversaciones.length; i += batchSize) {
+            const batch = conversaciones.slice(i, i + batchSize);
+            const timePromises = batch.map(async (reg) => {
+                const config = Storage.getGraph(reg.graph);
+                if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
+                try {
+                    const graph = RoamAPI.initGraph(reg.graph, config.token);
+                    const time = await RoamAPI.getPageEditTime(graph, reg.title);
+                    return { ...reg, lastEdited: time, error: null };
+                } catch (e) {
+                    return { ...reg, lastEdited: null, error: 'Error API' };
+                }
+            });
+
+            const results = await Promise.all(timePromises);
+            updatedConversaciones.push(...results);
+        }
         this.lastConversacionesData = updatedConversaciones;
         UI.renderRegistros(container, updatedConversaciones, false, this.conversacionesSort, 'conversacion');
     },
@@ -1344,19 +1368,22 @@ const App = {
             }
         }
 
-        // Save discovered plugins
+        // Prepare discovered plugins for bulk save
+        const pluginsToSave = [];
         for (const [pluginName, graphSet] of pluginMap) {
+            pluginsToSave.push({ name: pluginName, graphs: Array.from(graphSet) });
+
             const before = Storage.getPlugins().find(p => p.name === pluginName);
             const beforeCount = before ? before.graphs.length : 0;
 
-            Storage.savePlugin({ name: pluginName, graphs: Array.from(graphSet) });
-
-            const after = Storage.getPlugins().find(p => p.name === pluginName);
-            const afterCount = after ? after.graphs.length : 0;
-
-            if (!before || afterCount > beforeCount) {
+            const newGraphSet = new Set(before ? [...before.graphs, ...graphSet] : graphSet);
+            if (!before || newGraphSet.size > beforeCount) {
                 addedCount++;
             }
+        }
+
+        if (pluginsToSave.length > 0) {
+            Storage.savePluginsBulk(pluginsToSave);
         }
 
         if (btn) {

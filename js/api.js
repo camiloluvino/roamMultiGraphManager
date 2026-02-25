@@ -130,7 +130,8 @@ const RoamAPI = {
      * @returns {Promise<boolean>} True if exists
      */
     async pageExists(graph, title) {
-        const query = `[:find ?uid . :where [?e :node/title "${title}"] [?e :block/uid ?uid]]`;
+        const safeTitle = title.replace(/"/g, '\\"');
+        const query = `[:find ?uid . :where [?e :node/title "${safeTitle}"] [?e :block/uid ?uid]]`;
         const result = await this.q(graph, query);
         // q returns null when using '.', or [] when not using '.', if not found.
         return result !== null && result !== undefined && (!Array.isArray(result) || result.length > 0);
@@ -143,7 +144,8 @@ const RoamAPI = {
      * @returns {Promise<Object|null>} Page object with uid or null
      */
     async getPageByTitle(graph, title) {
-        const query = `[:find ?uid . :where [?e :node/title "${title}"] [?e :block/uid ?uid]]`;
+        const safeTitle = title.replace(/"/g, '\\"');
+        const query = `[:find ?uid . :where [?e :node/title "${safeTitle}"] [?e :block/uid ?uid]]`;
         const uid = await this.q(graph, query);
 
         if (uid && (!Array.isArray(uid) || uid.length > 0)) {
