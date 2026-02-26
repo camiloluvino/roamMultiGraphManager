@@ -4,6 +4,12 @@ const App = {
     currentView: 'dashboard', // default top-level view
     selectedPlugins: new Set(), // multiple selected plugins for sync
 
+    // Cache system for API responses (avoids redundant fetches on tab switches)
+    _cache: {},            // { key: { data, timestamp } }
+    _cacheMaxAge: 30000,   // 30 seconds TTL
+    _pendingFetches: {},   // { key: Promise } — deduplication of in-flight requests
+    _viewSwitchTimer: null, // debounce for tab switching
+
     // Sort states
     dashboardSort: { column: 'time', direction: 'desc' },
     registrosSort: { column: 'status', direction: 'desc' },
@@ -54,11 +60,56 @@ const App = {
      * Setup auto-shutdown listener using a heartbeat (ping) mechanism
      */
     setupAutoShutdown() {
-        // Enviar un "latido" al servidor cada 2 segundos.
-        // Si el servidor deja de recibir estos latidos durante 5 segundos (porque cerraste la pestaña), se auto-apagará.
+        // Enviar un "latido" al servidor cada 15 segundos.
+        // Si el servidor deja de recibir estos latidos durante 35 segundos (porque cerraste la pestaña), se auto-apagará.
         setInterval(() => {
             fetch('/heartbeat', { cache: 'no-store' }).catch(() => { });
-        }, 2000);
+        }, 15000);
+    },
+
+    /**
+     * Cache helper: returns cached data if fresh, deduplicates in-flight requests,
+     * or executes fetchFn and caches the result.
+     * @param {string} key - Cache key
+     * @param {Function} fetchFn - Async function that returns data
+     * @returns {Promise<{data: any, fromCache: boolean}>}
+     */
+    async _getCachedOrFetch(key, fetchFn) {
+        // Return cached data if still valid
+        const cached = this._cache[key];
+        if (cached && (Date.now() - cached.timestamp < this._cacheMaxAge)) {
+            return { data: cached.data, fromCache: true };
+        }
+
+        // If there's already a fetch in progress for this key, return that promise (deduplication)
+        if (this._pendingFetches[key]) {
+            const data = await this._pendingFetches[key];
+            return { data, fromCache: false };
+        }
+
+        // Execute fetch, store promise for deduplication
+        const promise = fetchFn();
+        this._pendingFetches[key] = promise;
+
+        try {
+            const data = await promise;
+            this._cache[key] = { data, timestamp: Date.now() };
+            return { data, fromCache: false };
+        } finally {
+            delete this._pendingFetches[key];
+        }
+    },
+
+    /**
+     * Invalidate a specific cache entry or all entries
+     * @param {string} [key] - Cache key to invalidate; if omitted, clears all
+     */
+    _invalidateCache(key) {
+        if (key) {
+            delete this._cache[key];
+        } else {
+            this._cache = {};
+        }
     },
 
     /**
@@ -488,16 +539,19 @@ const App = {
             view.classList.toggle('active', view.id === `view-${viewName}`);
         });
 
-        // Auto-refresh when entering views
-        if (viewName === 'dashboard') {
-            this.refreshDashboard();
-        } else if (viewName === 'registros') {
-            this.refreshRegistros();
-        } else if (viewName === 'conversaciones') {
-            this.refreshConversaciones();
-        } else if (viewName === 'plugins') {
-            this.refreshPlugins();
-        }
+        // Debounced auto-refresh: rapid tab switching only triggers the last tab's refresh
+        clearTimeout(this._viewSwitchTimer);
+        this._viewSwitchTimer = setTimeout(() => {
+            if (viewName === 'dashboard') {
+                this.refreshDashboard();
+            } else if (viewName === 'registros') {
+                this.refreshRegistros();
+            } else if (viewName === 'conversaciones') {
+                this.refreshConversaciones();
+            } else if (viewName === 'plugins') {
+                this.refreshPlugins();
+            }
+        }, 150);
     },
 
     /**
@@ -540,49 +594,57 @@ const App = {
             return;
         }
 
+        // Build a cache key from current filters + selected graphs
+        const cacheKey = `dashboard_${timeFilter}_${actionFilter}_${Array.from(this.selectedGraphs).sort().join(',')}`;
+
         container.innerHTML = `<div class="empty-state"><div class="spinner" style="margin: 0 auto 16px;"></div><p>Cargando actividad...</p></div>`;
 
         let graphData = [];
 
-        // Fetch concurrently from selected graphs
-        const promises = Array.from(this.selectedGraphs).map(async graphName => {
-            const config = Storage.getGraph(graphName);
-            if (!config) return { graphName, items: [], error: 'Configuración no encontrada' };
+        const fetchDashboardData = async () => {
+            // Fetch concurrently from selected graphs
+            const promises = Array.from(this.selectedGraphs).map(async graphName => {
+                const config = Storage.getGraph(graphName);
+                if (!config) return { graphName, items: [], error: 'Configuración no encontrada' };
 
-            try {
-                const graph = RoamAPI.initGraph(graphName, config.token);
-                // Si hay filtro, traemos más items para no perder coincidencias antiguas
-                const limit = timeFilter === 'all' ? 15 : 100;
+                try {
+                    const graph = RoamAPI.initGraph(graphName, config.token);
+                    // Si hay filtro, traemos más items para no perder coincidencias antiguas
+                    const limit = timeFilter === 'all' ? 15 : 100;
 
-                // Fire both queries
-                const [pages, edits] = await Promise.all([
-                    RoamAPI.getRecentPages(graph, limit, since, until),
-                    RoamAPI.getRecentEdits(graph, limit, since, until)
-                ]);
+                    // Fire both queries
+                    const [pages, edits] = await Promise.all([
+                        RoamAPI.getRecentPages(graph, limit, since, until),
+                        RoamAPI.getRecentEdits(graph, limit, since, until)
+                    ]);
 
-                let items = [...pages, ...edits];
+                    let items = [...pages, ...edits];
 
-                // Apply Time Filter
-                if (timeFilter !== 'all') {
-                    items = items.filter(item => item.time >= since && item.time < until);
+                    // Apply Time Filter
+                    if (timeFilter !== 'all') {
+                        items = items.filter(item => item.time >= since && item.time < until);
+                    }
+
+                    // Apply Action Filter
+                    if (actionFilter !== 'all') {
+                        items = items.filter(item => item.type === actionFilter);
+                    }
+
+                    items.sort((a, b) => b.time - a.time);
+
+                    return { graphName, items: items.slice(0, 30), error: null };
+                } catch (error) {
+                    console.error(`Error loading activity for ${graphName}:`, error);
+                    Storage.addLog('error', `Dashboard: Falló carga de ${graphName}`);
+                    return { graphName, items: [], error: error.message };
                 }
+            });
 
-                // Apply Action Filter
-                if (actionFilter !== 'all') {
-                    items = items.filter(item => item.type === actionFilter);
-                }
+            return await Promise.all(promises);
+        };
 
-                items.sort((a, b) => b.time - a.time);
-
-                return { graphName, items: items.slice(0, 30), error: null };
-            } catch (error) {
-                console.error(`Error loading activity for ${graphName}:`, error);
-                Storage.addLog('error', `Dashboard: Falló carga de ${graphName}`);
-                return { graphName, items: [], error: error.message };
-            }
-        });
-
-        graphData = await Promise.all(promises);
+        const { data } = await this._getCachedOrFetch(cacheKey, fetchDashboardData);
+        graphData = data;
         this.lastDashboardData = graphData;
 
         const viewMode = document.getElementById('dashboard-view-mode')?.value || 'columns';
@@ -933,28 +995,35 @@ const App = {
 
         if (registros.length === 0) return;
 
-        // Fetch last edit times (in batches to avoid making hundreds of requests at once)
-        const updatedRegistros = [];
-        const batchSize = 10;
+        const cacheKey = `registros_${registros.map(r => r.id).join(',')}`;
 
-        for (let i = 0; i < registros.length; i += batchSize) {
-            const batch = registros.slice(i, i + batchSize);
-            const timePromises = batch.map(async (reg) => {
-                const config = Storage.getGraph(reg.graph);
-                if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
-                try {
-                    const graph = RoamAPI.initGraph(reg.graph, config.token);
-                    // Return max edited time 
-                    const time = await RoamAPI.getPageEditTime(graph, reg.title);
-                    return { ...reg, lastEdited: time, error: null };
-                } catch (e) {
-                    return { ...reg, lastEdited: null, error: 'Error API' };
-                }
-            });
+        const fetchRegistroTimes = async () => {
+            // Fetch last edit times (in batches to avoid making hundreds of requests at once)
+            const updatedRegistros = [];
+            const batchSize = 10;
 
-            const results = await Promise.all(timePromises);
-            updatedRegistros.push(...results);
-        }
+            for (let i = 0; i < registros.length; i += batchSize) {
+                const batch = registros.slice(i, i + batchSize);
+                const timePromises = batch.map(async (reg) => {
+                    const config = Storage.getGraph(reg.graph);
+                    if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
+                    try {
+                        const graph = RoamAPI.initGraph(reg.graph, config.token);
+                        // Return max edited time 
+                        const time = await RoamAPI.getPageEditTime(graph, reg.title);
+                        return { ...reg, lastEdited: time, error: null };
+                    } catch (e) {
+                        return { ...reg, lastEdited: null, error: 'Error API' };
+                    }
+                });
+
+                const results = await Promise.all(timePromises);
+                updatedRegistros.push(...results);
+            }
+            return updatedRegistros;
+        };
+
+        const { data: updatedRegistros } = await this._getCachedOrFetch(cacheKey, fetchRegistroTimes);
         this.lastRegistrosData = updatedRegistros;
         UI.renderRegistros(container, updatedRegistros, false, this.registrosSort, 'registro');
     },
@@ -1133,27 +1202,34 @@ const App = {
 
         if (conversaciones.length === 0) return;
 
-        // Fetch last edit times (in batches)
-        const updatedConversaciones = [];
-        const batchSize = 10;
+        const cacheKey = `conversaciones_${conversaciones.map(c => c.id).join(',')}`;
 
-        for (let i = 0; i < conversaciones.length; i += batchSize) {
-            const batch = conversaciones.slice(i, i + batchSize);
-            const timePromises = batch.map(async (reg) => {
-                const config = Storage.getGraph(reg.graph);
-                if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
-                try {
-                    const graph = RoamAPI.initGraph(reg.graph, config.token);
-                    const time = await RoamAPI.getPageEditTime(graph, reg.title);
-                    return { ...reg, lastEdited: time, error: null };
-                } catch (e) {
-                    return { ...reg, lastEdited: null, error: 'Error API' };
-                }
-            });
+        const fetchConversacionTimes = async () => {
+            // Fetch last edit times (in batches)
+            const updatedConversaciones = [];
+            const batchSize = 10;
 
-            const results = await Promise.all(timePromises);
-            updatedConversaciones.push(...results);
-        }
+            for (let i = 0; i < conversaciones.length; i += batchSize) {
+                const batch = conversaciones.slice(i, i + batchSize);
+                const timePromises = batch.map(async (reg) => {
+                    const config = Storage.getGraph(reg.graph);
+                    if (!config) return { ...reg, lastEdited: null, error: 'Sin conf' };
+                    try {
+                        const graph = RoamAPI.initGraph(reg.graph, config.token);
+                        const time = await RoamAPI.getPageEditTime(graph, reg.title);
+                        return { ...reg, lastEdited: time, error: null };
+                    } catch (e) {
+                        return { ...reg, lastEdited: null, error: 'Error API' };
+                    }
+                });
+
+                const results = await Promise.all(timePromises);
+                updatedConversaciones.push(...results);
+            }
+            return updatedConversaciones;
+        };
+
+        const { data: updatedConversaciones } = await this._getCachedOrFetch(cacheKey, fetchConversacionTimes);
         this.lastConversacionesData = updatedConversaciones;
         UI.renderRegistros(container, updatedConversaciones, false, this.conversacionesSort, 'conversacion');
     },

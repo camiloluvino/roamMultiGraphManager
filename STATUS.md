@@ -2,7 +2,7 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.5.0** (Optimización de Rendimiento y Procesamiento por Lotes)
+**v0.6.0** (Optimización Integral de Recursos y Caché)
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -24,6 +24,13 @@
 - 🟢 **Proxy de API (NUEVO v0.4.2):** Sistema de puente para operaciones de escritura que evita límites de tamaño del navegador y maneja redirecciones HTTP 308 de Roam.
 
 ## 3. Historial Reciente
+- **OPTIMIZACIÓN INTEGRAL DE RECURSOS (v0.6.0):**
+  - **Heartbeat Inteligente:** Reducción de frecuencia de 2s a 15s, disminuyendo el tráfico de red constante en un 87%.
+  - **Servidor Multi-hilo:** Migración a `ThreadingTCPServer` en `server.py` para procesar peticiones de proxy y heartbeat en paralelo sin bloqueos.
+  - **Caché en Memoria (App):** Sistema de caché con TTL de 30 segundos y deduplicación de peticiones para evitar calls duplicadas al cambiar entre pestañas.
+  - **Datomic Query Tuning:** Reducción de la ventana de búsqueda automática de 30 a 7 días en `api.js` para aligerar la carga de datos.
+  - **DOM Hash-Rendering:** Optimización en `ui.js` que salta el re-renderizado costoso (`innerHTML`) si los datos no han cambiado.
+  - **MemCache Storage:** Abstracción en `storage.js` que cachea lecturas de `localStorage` para evitar `JSON.parse` repetitivos en el hilo principal.
 - **OPTIMIZACIÓN DE RENDIMIENTO Y LOTES (v0.5.0):**
   - **Bulk Storage Write:** Implementación de guardado masivo en `localStorage` reduciendo el bloqueo del hilo principal durante escaneos.
   - **Batch Fetching:** Las consultas de metadatos (tiempos de edición) ahora se procesan en baches concurrentes de a 10 para evitar saturación de red.

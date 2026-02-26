@@ -416,10 +416,10 @@ const RoamAPI = {
         if (since > 0) constraints += `[(>= ?time ${since})] `;
         if (until !== Infinity) constraints += `[(< ?time ${until})] `;
 
-        // For performance, cap unbounded queries to last 30 days
+        // For performance, cap unbounded queries to last 7 days
         if (since === 0 && until === Infinity) {
-            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-            constraints += `[(>= ?time ${thirtyDaysAgo})] `;
+            const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+            constraints += `[(>= ?time ${sevenDaysAgo})] `;
         }
 
         // Find pages, their title, uid, and creation time
@@ -453,10 +453,10 @@ const RoamAPI = {
         if (since > 0) constraints += `[(>= ?time ${since})] `;
         if (until !== Infinity) constraints += `[(< ?time ${until})] `;
 
-        // For performance, cap unbounded queries to last 30 days
+        // For performance, cap unbounded queries to last 7 days
         if (since === 0 && until === Infinity) {
-            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-            constraints += `[(>= ?time ${thirtyDaysAgo})] `;
+            const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+            constraints += `[(>= ?time ${sevenDaysAgo})] `;
         }
 
         // Query only pages and their edit times to make it lighter

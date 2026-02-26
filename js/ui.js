@@ -4,6 +4,8 @@
  */
 
 const UI = {
+    // Track last render data to skip redundant DOM rebuilds
+    _lastRenderHash: {},
     /**
      * Show a toast notification
      * @param {string} message - Notification message
@@ -339,6 +341,14 @@ const UI = {
             `;
             return;
         }
+
+        // Skip re-render if data hasn't changed (avoids expensive innerHTML rebuild)
+        const hashKey = 'dashboard_' + viewMode;
+        const dataHash = JSON.stringify(graphData.map(g => ({ n: g.graphName, c: g.items?.length || 0, e: g.error })));
+        const sortStr = sortState ? `${sortState.column}_${sortState.direction}` : 'default';
+        const fullHash = dataHash + '_' + sortStr;
+        if (this._lastRenderHash[hashKey] === fullHash) return;
+        this._lastRenderHash[hashKey] = fullHash;
 
         switch (viewMode) {
             case 'columns':

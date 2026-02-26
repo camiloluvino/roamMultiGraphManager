@@ -16,18 +16,50 @@ const Storage = {
 
     MAX_LOGS: 100,
 
+    // In-memory cache to avoid repeated JSON.parse on reads
+    _memCache: {},
+
+    /**
+     * Read from localStorage with in-memory cache (avoids repeated JSON.parse)
+     * @param {string} key - localStorage key
+     * @param {*} fallback - Default value if key not found
+     * @returns {*} Parsed value
+     */
+    _cachedRead(key, fallback) {
+        if (this._memCache[key] !== undefined) {
+            return this._memCache[key];
+        }
+        try {
+            const raw = localStorage.getItem(key);
+            const parsed = raw ? JSON.parse(raw) : fallback;
+            this._memCache[key] = parsed;
+            return parsed;
+        } catch (e) {
+            console.error(`Storage read error for ${key}:`, e);
+            return fallback;
+        }
+    },
+
+    /**
+     * Write to localStorage and update in-memory cache
+     * @param {string} key - localStorage key
+     * @param {*} value - Value to store
+     */
+    _cachedWrite(key, value) {
+        this._memCache[key] = value;
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+            console.error(`Storage write error for ${key}:`, e);
+        }
+    },
+
     /**
      * Get all configured graphs
      * @returns {Object} Graph configurations
      */
     getGraphs() {
-        try {
-            const data = localStorage.getItem(this.KEYS.GRAPHS);
-            return data ? JSON.parse(data) : {};
-        } catch (e) {
-            console.error('Error reading graphs from storage', e);
-            return {};
-        }
+        return this._cachedRead(this.KEYS.GRAPHS, {});
     },
 
     /**
@@ -93,11 +125,7 @@ const Storage = {
      * @private
      */
     _saveGraphs(graphs) {
-        try {
-            localStorage.setItem(this.KEYS.GRAPHS, JSON.stringify(graphs));
-        } catch (e) {
-            console.error('Error saving graphs to storage', e);
-        }
+        this._cachedWrite(this.KEYS.GRAPHS, graphs);
     },
 
     /**
@@ -207,13 +235,7 @@ const Storage = {
      * @returns {Array} Array of register objects
      */
     getRegistros() {
-        try {
-            const data = localStorage.getItem(this.KEYS.REGISTROS);
-            return data ? JSON.parse(data) : [];
-        } catch (e) {
-            console.error('Error reading registros from storage', e);
-            return [];
-        }
+        return this._cachedRead(this.KEYS.REGISTROS, []);
     },
 
     /**
@@ -229,11 +251,7 @@ const Storage = {
             addedAt: new Date().toISOString()
         };
         registros.push(newReg);
-        try {
-            localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
-        } catch (e) {
-            console.error('Error saving registros to storage', e);
-        }
+        this._cachedWrite(this.KEYS.REGISTROS, registros);
     },
 
     /**
@@ -253,12 +271,7 @@ const Storage = {
         }));
 
         registros.push(...newRegs);
-
-        try {
-            localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
-        } catch (e) {
-            console.error('Error saving bulk registros to storage', e);
-        }
+        this._cachedWrite(this.KEYS.REGISTROS, registros);
     },
 
     /**
@@ -268,11 +281,7 @@ const Storage = {
     deleteRegistro(id) {
         let registros = this.getRegistros();
         registros = registros.filter(r => r.id !== id);
-        try {
-            localStorage.setItem(this.KEYS.REGISTROS, JSON.stringify(registros));
-        } catch (e) {
-            console.error('Error saving registros after delete', e);
-        }
+        this._cachedWrite(this.KEYS.REGISTROS, registros);
     },
 
     /**
@@ -280,13 +289,7 @@ const Storage = {
      * @returns {Array} Array of conversational register objects
      */
     getConversaciones() {
-        try {
-            const data = localStorage.getItem(this.KEYS.CONVERSACIONES);
-            return data ? JSON.parse(data) : [];
-        } catch (e) {
-            console.error('Error reading conversaciones from storage', e);
-            return [];
-        }
+        return this._cachedRead(this.KEYS.CONVERSACIONES, []);
     },
 
     /**
@@ -302,11 +305,7 @@ const Storage = {
             addedAt: new Date().toISOString()
         };
         conversaciones.push(newReg);
-        try {
-            localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
-        } catch (e) {
-            console.error('Error saving conversaciones to storage', e);
-        }
+        this._cachedWrite(this.KEYS.CONVERSACIONES, conversaciones);
     },
 
     /**
@@ -326,12 +325,7 @@ const Storage = {
         }));
 
         conversaciones.push(...newRegs);
-
-        try {
-            localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
-        } catch (e) {
-            console.error('Error saving bulk conversaciones to storage', e);
-        }
+        this._cachedWrite(this.KEYS.CONVERSACIONES, conversaciones);
     },
 
     /**
@@ -341,11 +335,7 @@ const Storage = {
     deleteConversacion(id) {
         let conversaciones = this.getConversaciones();
         conversaciones = conversaciones.filter(r => r.id !== id);
-        try {
-            localStorage.setItem(this.KEYS.CONVERSACIONES, JSON.stringify(conversaciones));
-        } catch (e) {
-            console.error('Error saving conversaciones after delete', e);
-        }
+        this._cachedWrite(this.KEYS.CONVERSACIONES, conversaciones);
     },
 
     /**
@@ -354,13 +344,7 @@ const Storage = {
      * @returns {Array} Array of plugin objects
      */
     getPlugins() {
-        try {
-            const data = localStorage.getItem(this.KEYS.PLUGINS);
-            return data ? JSON.parse(data) : [];
-        } catch (e) {
-            console.error('Error reading plugins from storage', e);
-            return [];
-        }
+        return this._cachedRead(this.KEYS.PLUGINS, []);
     },
 
     /**
@@ -385,11 +369,7 @@ const Storage = {
                 updatedAt: new Date().toISOString()
             });
         }
-        try {
-            localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
-        } catch (e) {
-            console.error('Error saving plugins to storage', e);
-        }
+        this._cachedWrite(this.KEYS.PLUGINS, plugins);
     },
 
     /**
@@ -426,11 +406,7 @@ const Storage = {
         }
 
         if (changed) {
-            try {
-                localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
-            } catch (e) {
-                console.error('Error saving bulk plugins to storage', e);
-            }
+            this._cachedWrite(this.KEYS.PLUGINS, plugins);
         }
     },
 
@@ -445,11 +421,7 @@ const Storage = {
         if (plugin) {
             plugin.graphs = graphs;
             plugin.updatedAt = new Date().toISOString();
-            try {
-                localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
-            } catch (e) {
-                console.error('Error updating plugin graphs', e);
-            }
+            this._cachedWrite(this.KEYS.PLUGINS, plugins);
         }
     },
 
@@ -460,11 +432,7 @@ const Storage = {
     deletePlugin(id) {
         let plugins = this.getPlugins();
         plugins = plugins.filter(p => p.id !== id);
-        try {
-            localStorage.setItem(this.KEYS.PLUGINS, JSON.stringify(plugins));
-        } catch (e) {
-            console.error('Error saving plugins after delete', e);
-        }
+        this._cachedWrite(this.KEYS.PLUGINS, plugins);
     }
 };
 
