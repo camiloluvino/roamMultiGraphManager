@@ -20,6 +20,8 @@ Aplicación web para gestionar páginas en múltiples grafos de Roam Research si
 - **🛡️ Auto-Shutdown Inteligente:** El servidor local se cierra automáticamente al detectar inactividad (heartbeat optimizado de 15s), manteniendo tu entorno limpio.
 - **🔗 Proxy de API (v0.4.2):** Las operaciones de escritura se realizan a través del servidor local para permitir la subida de plugins pesados y manejar redirecciones de la API de Roam.
 - **⚡ Optimización de Recursos (v0.6.0):** Implementación de **Caché en Memoria (30s TTL)**, servidor multi-hilo, y reducción del tráfico de red para una experiencia ultra-fluida.
+- **🛡️ Seguridad Reforzada (v0.6.1):** Auditoría completa con parches para prevenir SSRF (validación de URL), CORS restringido y binding exclusivo a `localhost` (127.0.0.1) para proteger tokens locales.
+
 
 ## 📋 Requisitos
 
@@ -102,6 +104,8 @@ Para cada grafo que quieras gestionar:
 - Los grafos encriptados (E2E) no son compatibles con la API
 - La búsqueda de páginas es por título **exacto**
 - **Importante:** Siempre usa `iniciar.bat` (servidor local) para abrir la app. Abrir `index.html` directamente causará errores CORS al intentar escribir en los grafos.
+- **Seguridad (v0.6.1):** El servidor ahora solo acepta conexiones desde `localhost` para evitar accesos no autorizados desde la red local. Además, el proxy está limitado exclusivamente a la API oficial de Roam Research.
+
 
 ## 🚀 Inicio Rápido
 

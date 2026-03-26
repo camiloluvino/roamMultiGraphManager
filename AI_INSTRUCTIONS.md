@@ -37,7 +37,7 @@ La aplicación sigue un patrón modular basado en **ES Modules**:
 5. **Responsabilidad Modular:** `ui.js` NO debe contener estado de negocio. `app.js` coordina flujos. `api.js` es un wrapper basado en `fetch`.
 
 ## 6. Contexto Técnico Específico
-- **Seguridad:** Los tokens de Roam Graph otorgan poder de escritura. El uso de `localStorage` requiere advertencias.
+- **Seguridad:** Los tokens de Roam Graph otorgan poder de escritura. El uso de `localStorage` requiere advertencias. El servidor local (`server.py`) debe estar siempre restringido a `127.0.0.1` y validar los orígenes de las peticiones para proteger estos tokens.
 - **Limitaciones de API de Roam:** No soporta grafos encriptados (E2E).
 - **Búsqueda exacta:** Se requiere coincidencia exacta del título de la página.
 - **Quirks de la API (REST Externa):** 
@@ -56,4 +56,6 @@ La pestaña **Plugins** permite sincronizar complementos `roam/js/` entre múlti
 - **Flujo de sincronización:** `syncPluginPage()` en `api.js` busca la página, elimina todos los bloques hijos existentes con `batch-actions` (delete-block), y crea la nueva estructura con `batch-actions` (create-block).
 - **Almacenamiento:** Los plugins se persisten en `localStorage` key `roam_mg_plugins`. Cada plugin guarda su nombre (título de página) y la lista de grafos donde existe.
 - **Auto-escaneo:** `getPagesByPrefix(graph, 'roam/js/')` busca todas las páginas con ese prefijo y registra cada una con sus grafos.
+- **Servidor Proxy Seguro (v0.6.1):** El servidor implementa validación de URL (`https://api.roamresearch.com/`) para evitar SSRF y restringe el acceso mediante `Access-Control-Allow-Origin` basado en una lista blanca de localhost.
 - **IDs DOM clave:** `plugins-content`, `plugin-sync-panel`, `sync-code`, `sync-create-missing`, `sync-preview`, `btn-auto-scan-plugins`, `btn-execute-sync`, `btn-cancel-sync`.
+

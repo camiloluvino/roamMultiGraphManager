@@ -2,7 +2,8 @@
 **Repositorio Remoto:** [camiloluvino/roamMultiGraphManager](https://github.com/camiloluvino/roamMultiGraphManager)
 
 ## 1. Versión Actual
-**v0.6.0** (Optimización Integral de Recursos y Caché)
+**v0.6.1** (Auditoría de Seguridad y Hardening)
+
 
 ## 2. Estado de Funcionalidades
 - 🟢 **UI General:** Rediseño total minimalista. Layout **Full-Width** (sin barra lateral) para máxima área de trabajo.
@@ -24,7 +25,13 @@
 - 🟢 **Proxy de API (NUEVO v0.4.2):** Sistema de puente para operaciones de escritura que evita límites de tamaño del navegador y maneja redirecciones HTTP 308 de Roam.
 
 ## 3. Historial Reciente
+- **AUDITORÍA Y SEGURIDAD (v0.6.1):**
+  - **Localhost Binding:** Restricción definitiva del servidor Python a `127.0.0.1` para evitar accesos desde la red local/Wi-Fi.
+  - **Protección SSRF:** Validación estricta de URLs en el proxy para permitir únicamente tráfico hacia `api.roamresearch.com`.
+  - **CORS Hardening:** Sustitución de `*` por validación dinámica de origen limitada a `localhost` y `127.0.0.1`.
+  - **Audit de Código:** Verificación de seguridad en `ui.js`, `app.js` y `storage.js` confirmando el uso correcto de `escapeHTML` y manejo seguro de tokens.
 - **OPTIMIZACIÓN INTEGRAL DE RECURSOS (v0.6.0):**
+
   - **Heartbeat Inteligente:** Reducción de frecuencia de 2s a 15s, disminuyendo el tráfico de red constante en un 87%.
   - **Servidor Multi-hilo:** Migración a `ThreadingTCPServer` en `server.py` para procesar peticiones de proxy y heartbeat en paralelo sin bloqueos.
   - **Caché en Memoria (App):** Sistema de caché con TTL de 30 segundos y deduplicación de peticiones para evitar calls duplicadas al cambiar entre pestañas.

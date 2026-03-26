@@ -11,12 +11,22 @@ PORT = 8000
 last_heartbeat = time.time()
 
 class HeartbeatHandler(http.server.SimpleHTTPRequestHandler):
+    def _is_allowed_origin(self):
+        origin = self.headers.get('Origin')
+        if not origin:
+            return True
+        return origin in ('http://localhost:8000', 'http://127.0.0.1:8000')
+
     def do_GET(self):
         global last_heartbeat
         if self.path == '/heartbeat':
             last_heartbeat = time.time()
+            if not self._is_allowed_origin():
+                self.send_error(403)
+                return
             self.send_response(200)
-            self.send_header('Access-Control-Allow-Origin', '*')
+            origin = self.headers.get('Origin', 'http://localhost:8000')
+            self.send_header('Access-Control-Allow-Origin', origin)
             self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
             self.end_headers()
             self.wfile.write(b'ok')
@@ -25,8 +35,13 @@ class HeartbeatHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_OPTIONS(self):
         """Handle CORS preflight for proxy endpoint"""
+        if not self._is_allowed_origin():
+            self.send_error(403)
+            return
+
         self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
+        origin = self.headers.get('Origin', 'http://localhost:8000')
+        self.send_header('Access-Control-Allow-Origin', origin)
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
@@ -34,6 +49,10 @@ class HeartbeatHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         """Proxy requests to Roam Research API to bypass browser payload limits"""
         if self.path == '/api/proxy':
+            if not self._is_allowed_origin():
+                self._send_json(403, {'error': 'Origen no permitido'})
+                return
+
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(content_length)
@@ -46,6 +65,10 @@ class HeartbeatHandler(http.server.SimpleHTTPRequestHandler):
 
                 if not url or not token or payload is None:
                     self._send_json(400, {'error': 'Faltan parámetros: url, token, payload'})
+                    return
+
+                if not url.startswith('https://api.roamresearch.com/'):
+                    self._send_json(403, {'error': 'URL no permitida: Solo se permiten peticiones a la API de Roam Research'})
                     return
 
                 # Custom opener that follows 308 redirects preserving POST method
@@ -95,7 +118,8 @@ class HeartbeatHandler(http.server.SimpleHTTPRequestHandler):
     def _send_json(self, status, data, raw=False):
         """Helper to send JSON response with CORS headers"""
         self.send_response(status)
-        self.send_header('Access-Control-Allow-Origin', '*')
+        origin = self.headers.get('Origin', 'http://localhost:8000')
+        self.send_header('Access-Control-Allow-Origin', origin)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         if raw and isinstance(data, str):
@@ -130,7 +154,7 @@ def run():
     monitor_thread = threading.Thread(target=monitor_heartbeat, daemon=True)
     monitor_thread.start()
     
-    with socketserver.ThreadingTCPServer(("", PORT), HeartbeatHandler) as httpd:
+    with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), HeartbeatHandler) as httpd:
         print("============================================")
         print("  Roam Multi-Graph Manager Servidor")
         print("============================================")
